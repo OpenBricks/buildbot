@@ -125,9 +125,9 @@ for conffile in $REPO/config/defconfigs/*.conf; do
       -e 's:CONFIG_OPT_TARGET_FLAT=y:# CONFIG_OPT_TARGET_FLAT is not set:' \
       -e 's:# CONFIG_OPT_TARGET_TARBALL is not set:CONFIG_OPT_TARGET_TARBALL=y:' \
       < config/defconfigs/$NAME.conf \
-      > `ls -d build/build.host/bst-kconfig-*`/.config
+      > `ls -d build/build.host/kconfig-frontends-*`/.config
   else
-    cp -P config/defconfigs/$NAME.conf `ls -d build/build.host/bst-kconfig-*`/.config
+    cp -P config/defconfigs/$NAME.conf `ls -d build/build.host/kconfig-frontends-*`/.config
   fi
   make silentoldconfig >> $BUILDLOG 2>&1 || true
 #  if [ $? -ne 0 ]; then
