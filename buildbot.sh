@@ -25,22 +25,23 @@ log()
 
 mailfail()
 {
-  mail -s "[buildbot] $NAME failed to build" devel@openbricks.org <<EOF
+
+cat > /tmp/mesg.txt <<EOF
 Hi,
 
 I was trying to build '$NAME', but something went wrong. The build
 failed at '$1' stage, here's the last log messages:
 ----------
-`tail -50 $BUILDLOG`
+`tail -75 $BUILDLOG`
 ----------
 
 I was building from the $REPONAME repository at $REV revision on $DATE.
-You can find the full log at
-buildbot:${BUILDLOG}
-If you don't know how to access buildbot, email davide for an account.
+You can find the full log attached.
 
 buildbot
 EOF
+
+mpack -s "[buildbot] $NAME failed to build" -d /tmp/mesg.txt $BUILDLOG.bz2 devel@openbricks.org
 }
 
 sendsnapshot ()
@@ -185,13 +186,15 @@ for conffile in $REPO/config/defconfigs/*.conf; do
     sendsnapshot
     # send snapshot, don't wait
     make quickclean
+    log "Archiving $NAME log"
+    lbzip2 -9 $BUILDLOG
   else
+    log "Archiving $NAME log"
+    lbzip2 -9 $BUILDLOG
     log "$NAME build failed"
     mailfail build
     rm -f "$STAMPS/$REPONAME/$NAME"
   fi
-  log "Archiving $NAME log"
-  lbzip2 -9 $BUILDLOG
 done
 
 rm -f $STAMPS/lock
