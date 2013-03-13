@@ -163,9 +163,9 @@ for conffile in $REPO/config/defconfigs/*.conf; do
 #    rm -f "$STAMPS/$REPONAME/$NAME"
 #    continue
 #  fi
-  make clean >> $BUILDLOG 2>&1
+  make quickclean >> $BUILDLOG 2>&1
   if [ $? -ne 0 ]; then
-    log "$NAME clean failed"
+    log "$NAME quickclean failed"
     mailfail clean
     rm -f "$STAMPS/$REPONAME/$NAME"
     continue
@@ -184,6 +184,7 @@ for conffile in $REPO/config/defconfigs/*.conf; do
     ln -sf ../../data/$REPONAME/$NAME/$DATE $SNAPSHOTS/$REPONAME/$NAME/$DATE
     sendsnapshot
     # send snapshot, don't wait
+    make quickclean
   else
     log "$NAME build failed"
     mailfail build
