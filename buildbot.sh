@@ -6,6 +6,7 @@ REPO=$BASE/src/$REPONAME
 SOURCES=$BASE/src/sources
 BUILD=$BASE/build
 SNAPSHOTS=$BASE/snapshots
+SNAPSHOTSD=$BASE/snapshots/data
 STAMPS=$BASE/stamps
 LOGS=$BASE/logs
 LOGFILE=$BASE/logs/$REPONAME.log
@@ -44,12 +45,18 @@ EOF
 
 sendsnapshot ()
 {
-  log "Rsyncing snapshots to fry"
-  rsync --bwlimit=75 --archive --delete $SNAPSHOTS/* buildbot@fry.geexbox.org:/data/snapshots >> $BUILDLOG 2>&1
+  log "Rsyncing snapshots to fry (data)"
+  rsync --bwlimit=75 --archive --delete $SNAPSHOTSD buildbot@fry.geexbox.org:/data/snapshots >> $BUILDLOG 2>&1
   if [ $? -eq 0 ]; then
-    log "rsync successful"
+    log "rsync successful, updating link now"
+    rsync --bwlimit=75 --archive --delete $SNAPSHOTS/* buildbot@fry.geexbox.org:/data/snapshots >> $BUILDLOG 2>&1
+    if [ $? -eq 0 ]; then
+      log "rsync successful (links)"
+    else
+      log "rsync failed (links)"
+    fi
   else
-    log "rsync failed"
+    log "rsync failed (data)"
   fi
 }
 
@@ -110,7 +117,11 @@ else
   fi
 fi
 
-# in case previous one failed
+# Delete old snapshots
+find $SNAPSHOTS/$REPONAME/geexbox-xbmc-*/* -mtime +60 -delete
+find $SNAPSHOTSD/$REPONAME/geexbox-xbmc-*/* -mtime +60 -delete
+
+# in case previous one failed and synchronize if we have deleted old snapshots
 sendsnapshot
 
 # build configs
@@ -165,10 +176,12 @@ for conffile in $REPO/config/defconfigs/*.conf; do
   if [ $? -eq 0 ]; then
     log "$NAME build successful"
     echo $DATE > "$STAMPS/$REPONAME/$NAME"
-    mkdir -p "$SNAPSHOTS/$REPONAME/$NAME/$DATE"
-    cp -PR binaries/* "$SNAPSHOTS/$REPONAME/$NAME/$DATE"
+    mkdir -p "$SNAPSHOTSD/$REPONAME/$NAME/$DATE"
+    mkdir -p "$SNAPSHOTS/$REPONAME/$NAME"
+    cp -PR binaries/* "$SNAPSHOTSD/$REPONAME/$NAME/$DATE"
     rm -f $SNAPSHOTS/$REPONAME/$NAME/latest
     ln -sf $DATE "$SNAPSHOTS/$REPONAME/$NAME/latest"
+    ln -sf ../../data/$REPONAME/$NAME/$DATE $SNAPSHOTS/$REPONAME/$NAME/$DATE
     sendsnapshot
     # send snapshot, don't wait
   else
