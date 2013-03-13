@@ -42,6 +42,17 @@ buildbot
 EOF
 }
 
+sendsnapshot ()
+{
+  log "Rsyncing snapshots to fry"
+  rsync --bwlimit=75 --archive --delete $SNAPSHOTS/* buildbot@fry.geexbox.org:/data/snapshots >> $BUILDLOG 2>&1
+  if [ $? -eq 0 ]; then
+    log "rsync successful"
+  else
+    log "rsync failed"
+  fi
+}
+
 mkdir -p $BUILD $SOURCES $SNAPSHOTS $STAMPS/$REPONAME $LOGS $STAMPSGET
 log "Starting"
 if [ -r $STAMPS/lock ]; then
@@ -99,6 +110,9 @@ else
   fi
 fi
 
+# in case previous one failed
+sendsnapshot
+
 # build configs
 for conffile in $REPO/config/defconfigs/*.conf; do
   cd $BUILD
@@ -155,6 +169,8 @@ for conffile in $REPO/config/defconfigs/*.conf; do
     cp -PR binaries/* "$SNAPSHOTS/$REPONAME/$NAME/$DATE"
     rm -f $SNAPSHOTS/$REPONAME/$NAME/latest
     ln -sf $DATE "$SNAPSHOTS/$REPONAME/$NAME/latest"
+    sendsnapshot
+    # send snapshot, don't wait
   else
     log "$NAME build failed"
     mailfail build
@@ -164,12 +180,5 @@ for conffile in $REPO/config/defconfigs/*.conf; do
   lbzip2 -9 $BUILDLOG
 done
 
-log "Rsyncing snapshots to fry"
-rsync --archive --delete $SNAPSHOTS/* buildbot@fry.geexbox.org:/data/snapshots >> $BUILDLOG 2>&1
-if [ $? -eq 0 ]; then
-  log "rsync successful"
-else
-  log "rsync failed"
-fi
 rm -f $STAMPS/lock
 log "Quitting"
