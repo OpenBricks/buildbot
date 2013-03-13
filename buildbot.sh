@@ -9,6 +9,8 @@ SNAPSHOTS=$BASE/snapshots
 STAMPS=$BASE/stamps
 LOGS=$BASE/logs
 LOGFILE=$BASE/logs/$REPONAME.log
+STAMPSGET=$BASE/src/.stamps
+
 if [ -r $STAMPS/$REPONAME/rev ]; then
   OLDREV=`cat $STAMPS/$REPONAME/rev`
 fi
@@ -40,7 +42,7 @@ buildbot
 EOF
 }
 
-mkdir -p $BUILD $SOURCES $SNAPSHOTS $STAMPS/$REPONAME $LOGS
+mkdir -p $BUILD $SOURCES $SNAPSHOTS $STAMPS/$REPONAME $LOGS $STAMPSGET
 log "Starting"
 if [ -r $STAMPS/lock ]; then
   log "Another buildbot instance (`cat $STAMPS/lock`) is running, aborting."
@@ -109,6 +111,7 @@ for conffile in $REPO/config/defconfigs/*.conf; do
     rm -f $STAMPS/$NAME
     hg clone $REPO $NAME > $BUILDLOG 
     ln -s $SOURCES $NAME/sources
+    ln -s $STAMPSGET $NAME/.stamps
   fi
   if [ "$STAMPS/$REPONAME/$NAME" -nt $conffile ]; then
     log "Build $NAME is up to date"
@@ -143,14 +146,6 @@ for conffile in $REPO/config/defconfigs/*.conf; do
     continue
   fi
   rm -rf binaries
-  log "Fetching $NAME sources"
-  make get >> $BUILDLOG 2>&1
-  if [ $? -ne 0 ]; then
-    log "$NAME get failed"
-    mailfail get
-    rm -f "$STAMPS/$REPONAME/$NAME"
-    continue
-  fi
   log "Making $NAME"
   make >> $BUILDLOG 2>&1
   if [ $? -eq 0 ]; then
