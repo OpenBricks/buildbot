@@ -60,7 +60,7 @@ sendsnapshot ()
   fi
 }
 
-mkdir -p $BUILD $SOURCES $SNAPSHOTS $STAMPS/$REPONAME $LOGS $STAMPSGET
+mkdir -p $BUILD $SOURCES $SNAPSHOTS $SNAPSHOTSD $STAMPS/$REPONAME $LOGS $STAMPSGET
 log "Starting"
 if [ -r $STAMPS/lock ]; then
   log "Another buildbot instance (`cat $STAMPS/lock`) is running, aborting."
