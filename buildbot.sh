@@ -42,38 +42,6 @@ mpack -s "[buildbot] $NAME failed to build" -d /tmp/mesg.txt $BUILDLOG.bz2 tomlo
 
 }
 
-sendsnapshot ()
-{
-  if [ -f $LOGS/rsynchfailed ] ; then
-    rm $LOGS/rsynchfailed
-  fi
-  log "Rsyncing snapshots to fry"
-  log "rsync -t --size-only --bwlimit=75 --archive --delete --log-file=/tmp/rlog --partial $SNAPSHOTSD buildbot@fry.geexbox.org:/data/snapshots"
-  rsync -t --size-only --bwlimit=75 --archive --delete --log-file=/tmp/rlog --partial $SNAPSHOTSD buildbot@fry.geexbox.org:/data/snapshots/ >> $BUILDLOG 2>&1
-  if [ $? -eq 0 ]; then
-    log "rsync successful"
-  else
-    log "rsync failed"
-    touch $LOGS/rsynchfailed
-  fi
-}
-
-sendsnapshotlink ()
-{
-  if ! [ -f $LOGS/rsynchfailed ] ; then
-    log "Rsyncing snapshots (link) to fry"
-    log "rsync -t --size-only --bwlimit=75 --archive --delete --log-file=/tmp/rlog $SNAPSHOTS/* buildbot@fry.geexbox.org:/data/snapshots"
-    rsync -t --size-only --bwlimit=75 --archive --delete --log-file=/tmp/rlog --partial $SNAPSHOTS/* buildbot@fry.geexbox.org:/data/snapshots >> $BUILDLOG 2>&1
-    if [ $? -eq 0 ]; then
-      log "rsync successful (link)"
-    else
-      log "rsync failed (link)"
-    fi
-  fi
-}
-
-
-
 mkdir -p $BUILD $SOURCES $SNAPSHOTS $SNAPSHOTSD $STAMPS/$REPONAME $LOGS $BASE/src/.stamps
 log "Starting"
 if [ -r $STAMPS/lock ]; then
@@ -134,8 +102,6 @@ fi
 
 find $SNAPSHOTS/openbricks/geexbox-xbmc-*/* -mtime +30 -delete
 find $SNAPSHOTS/data/openbricks/geexbox-xbmc-*/* -mtime +30 -delete
-#sendsnapshot
-#sendsnapshotlink
 
 # build configs
 for conffile in $REPO/config/defconfigs/geexbox-xbmc-*.conf; do
@@ -174,11 +140,6 @@ for conffile in $REPO/config/defconfigs/geexbox-xbmc-*.conf; do
     cp -P config/defconfigs/$NAME.conf `ls -d build/build.host/kconfig-frontends-*`/.config
   fi
   make silentoldconfig >> $BUILDLOG 2>&1 || true
-#  if [ $? -ne 0 ]; then
-#    log "$NAME config failed"
-#    rm -f "$STAMPS/$REPONAME/$NAME"
-#    continue
-#  fi
   make quickclean >> $BUILDLOG 2>&1
   if [ $? -ne 0 ]; then
     log "$NAME quickclean failed"
@@ -187,14 +148,6 @@ for conffile in $REPO/config/defconfigs/geexbox-xbmc-*.conf; do
     continue
   fi
   rm -rf binaries
-#  log "Fetching $NAME sources"
-#  make get >> $BUILDLOG 2>&1
-#  if [ $? -ne 0 ]; then
-#    log "$NAME get failed"
-#    mailfail get
-#    rm -f "$STAMPS/$REPONAME/$NAME"
-#    continue
-#  fi
   log "Making $NAME"
   make >> $BUILDLOG 2>&1
   if [ $? -eq 0 ]; then
@@ -205,9 +158,7 @@ for conffile in $REPO/config/defconfigs/geexbox-xbmc-*.conf; do
     cp -PR binaries/* "$SNAPSHOTSD/$REPONAME/$NAME/$DATE"
     rm -f $SNAPSHOTS/$REPONAME/$NAME/latest
     ln -sf $DATE "$SNAPSHOTS/$REPONAME/$NAME/latest"
-#    sendsnapshot
     ln -sf ../../data/$REPONAME/$NAME/$DATE $SNAPSHOTS/$REPONAME/$NAME/$DATE
-#    sendsnapshotlink
 # delete all *-dbg_* packages
     find $SNAPSHOTS/data/openbricks/geexbox-xbmc-*/* -name *-dbg_* -delete
     make quickclean
@@ -222,12 +173,5 @@ for conffile in $REPO/config/defconfigs/geexbox-xbmc-*.conf; do
   fi
 done
 
-#log "Rsyncing snapshots to fry"
-#rsync --archive --delete $SNAPSHOTS/* buildbot@fry.geexbox.org:/data/snapshots >> $BUILDLOG 2>&1
-#if [ $? -eq 0 ]; then
-#  log "rsync successful"
-#else
-#  log "rsync failed"
-#fi
 rm -f $STAMPS/lock
 log "Quitting"
