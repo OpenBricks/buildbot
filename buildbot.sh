@@ -208,6 +208,8 @@ for conffile in $REPO/config/defconfigs/geexbox-xbmc-*.conf; do
 #    sendsnapshot
     ln -sf ../../data/$REPONAME/$NAME/$DATE $SNAPSHOTS/$REPONAME/$NAME/$DATE
 #    sendsnapshotlink
+# delete all *-dbg_* packages
+    find $SNAPSHOTS/data/openbricks/geexbox-xbmc-*/* -name *-dbg_* -delete
     make quickclean
     log "Archiving $NAME log"
     lbzip2 -9 $BUILDLOG
