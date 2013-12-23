@@ -1,5 +1,5 @@
 #!/bin/sh
-BASE=/srv/buildbot
+BASE=/home/geexbox/bot/buildbot
 REPONAME=openbricks
 REPOURL="http://hg.openbricks.org/openbricks"
 REPO=$BASE/src/$REPONAME
@@ -25,49 +25,63 @@ log()
 
 mailfail()
 {
-
 cat > /tmp/mesg.txt <<EOF
 Hi,
 
 I was trying to build '$NAME', but something went wrong. The build
-failed at '$1' stage, here's the last log messages:
-----------
-`tail -75 $BUILDLOG`
+failed at '$1' stage,
 ----------
 
 I was building from the $REPONAME repository at $REV revision on $DATE.
-You can find the full log attached.
+Attached, the log messages
 
 buildbot
 EOF
 
-mpack -s "[buildbot] $NAME failed to build" -d /tmp/mesg.txt $BUILDLOG.bz2 devel@openbricks.org
+mpack -s "[buildbot] $NAME failed to build" -d /tmp/mesg.txt $BUILDLOG.bz2 tomlohave@gmail.com nicknickolaev@gmail.com openbricks-devel@googlegroups.com r.ihle@s-t.de
+
 }
 
 sendsnapshot ()
 {
-  log "Rsyncing snapshots to fry (data)"
-  rsync --bwlimit=75 --archive --delete $SNAPSHOTSD buildbot@fry.geexbox.org:/data/snapshots >> $BUILDLOG 2>&1
+  if [ -f $LOGS/rsynchfailed ] ; then
+    rm $LOGS/rsynchfailed
+  fi
+  log "Rsyncing snapshots to fry"
+  log "rsync -t --size-only --bwlimit=75 --archive --delete --log-file=/tmp/rlog --partial $SNAPSHOTSD buildbot@fry.geexbox.org:/data/snapshots"
+  rsync -t --size-only --bwlimit=75 --archive --delete --log-file=/tmp/rlog --partial $SNAPSHOTSD buildbot@fry.geexbox.org:/data/snapshots/ >> $BUILDLOG 2>&1
   if [ $? -eq 0 ]; then
-    log "rsync successful, updating link now"
-    rsync --bwlimit=75 --archive --delete $SNAPSHOTS/* buildbot@fry.geexbox.org:/data/snapshots >> $BUILDLOG 2>&1
-    if [ $? -eq 0 ]; then
-      log "rsync successful (links)"
-    else
-      log "rsync failed (links)"
-    fi
+    log "rsync successful"
   else
-    log "rsync failed (data)"
+    log "rsync failed"
+    touch $LOGS/rsynchfailed
   fi
 }
 
-mkdir -p $BUILD $SOURCES $SNAPSHOTS $SNAPSHOTSD $STAMPS/$REPONAME $LOGS $STAMPSGET
+sendsnapshotlink ()
+{
+  if ! [ -f $LOGS/rsynchfailed ] ; then
+    log "Rsyncing snapshots (link) to fry"
+    log "rsync -t --size-only --bwlimit=75 --archive --delete --log-file=/tmp/rlog $SNAPSHOTS/* buildbot@fry.geexbox.org:/data/snapshots"
+    rsync -t --size-only --bwlimit=75 --archive --delete --log-file=/tmp/rlog --partial $SNAPSHOTS/* buildbot@fry.geexbox.org:/data/snapshots >> $BUILDLOG 2>&1
+    if [ $? -eq 0 ]; then
+      log "rsync successful (link)"
+    else
+      log "rsync failed (link)"
+    fi
+  fi
+}
+
+
+
+mkdir -p $BUILD $SOURCES $SNAPSHOTS $SNAPSHOTSD $STAMPS/$REPONAME $LOGS $BASE/src/.stamps
 log "Starting"
 if [ -r $STAMPS/lock ]; then
   log "Another buildbot instance (`cat $STAMPS/lock`) is running, aborting."
   exit 1
 else
   /bin/echo -n $$ > $STAMPS/lock
+  rm -Rf $BUILD/*
 fi
 if [ ! -d $REPO ]; then
   log "Cloning repo"
@@ -118,15 +132,13 @@ else
   fi
 fi
 
-# Delete old snapshots
-find $SNAPSHOTS/$REPONAME/geexbox-xbmc-*/* -mtime +60 -delete
-find $SNAPSHOTSD/$REPONAME/geexbox-xbmc-*/* -mtime +60 -delete
-
-# in case previous one failed and synchronize if we have deleted old snapshots
-sendsnapshot
+find $SNAPSHOTS/openbricks/geexbox-xbmc-*/* -mtime +30 -delete
+find $SNAPSHOTS/data/openbricks/geexbox-xbmc-*/* -mtime +30 -delete
+#sendsnapshot
+#sendsnapshotlink
 
 # build configs
-for conffile in $REPO/config/defconfigs/*.conf; do
+for conffile in $REPO/config/defconfigs/geexbox-xbmc-*.conf; do
   cd $BUILD
   NAME=`basename $conffile .conf`
   mkdir -p $LOGS/$REPONAME
@@ -139,6 +151,7 @@ for conffile in $REPO/config/defconfigs/*.conf; do
     ln -s $SOURCES $NAME/sources
     ln -s $STAMPSGET $NAME/.stamps
   fi
+
   if [ "$STAMPS/$REPONAME/$NAME" -nt $conffile ]; then
     log "Build $NAME is up to date"
     continue
@@ -153,6 +166,8 @@ for conffile in $REPO/config/defconfigs/*.conf; do
     sed \
       -e 's:CONFIG_OPT_TARGET_FLAT=y:# CONFIG_OPT_TARGET_FLAT is not set:' \
       -e 's:# CONFIG_OPT_TARGET_TARBALL is not set:CONFIG_OPT_TARGET_TARBALL=y:' \
+      -e 's:CONFIG_OPT_CONCURRENCY_MAKE_LEVEL=8:CONFIG_OPT_CONCURRENCY_MAKE_LEVEL=8:' \
+      -e 's:CONFIG_OPT_CONCURRENCY_MAKE_LEVEL=9:CONFIG_OPT_CONCURRENCY_MAKE_LEVEL=8:'\
       < config/defconfigs/$NAME.conf \
       > `ls -d build/build.host/kconfig-frontends-*`/.config
   else
@@ -172,6 +187,14 @@ for conffile in $REPO/config/defconfigs/*.conf; do
     continue
   fi
   rm -rf binaries
+#  log "Fetching $NAME sources"
+#  make get >> $BUILDLOG 2>&1
+#  if [ $? -ne 0 ]; then
+#    log "$NAME get failed"
+#    mailfail get
+#    rm -f "$STAMPS/$REPONAME/$NAME"
+#    continue
+#  fi
   log "Making $NAME"
   make >> $BUILDLOG 2>&1
   if [ $? -eq 0 ]; then
@@ -182,9 +205,9 @@ for conffile in $REPO/config/defconfigs/*.conf; do
     cp -PR binaries/* "$SNAPSHOTSD/$REPONAME/$NAME/$DATE"
     rm -f $SNAPSHOTS/$REPONAME/$NAME/latest
     ln -sf $DATE "$SNAPSHOTS/$REPONAME/$NAME/latest"
+#    sendsnapshot
     ln -sf ../../data/$REPONAME/$NAME/$DATE $SNAPSHOTS/$REPONAME/$NAME/$DATE
-    sendsnapshot
-    # send snapshot, don't wait
+#    sendsnapshotlink
     make quickclean
     log "Archiving $NAME log"
     lbzip2 -9 $BUILDLOG
@@ -197,5 +220,12 @@ for conffile in $REPO/config/defconfigs/*.conf; do
   fi
 done
 
+#log "Rsyncing snapshots to fry"
+#rsync --archive --delete $SNAPSHOTS/* buildbot@fry.geexbox.org:/data/snapshots >> $BUILDLOG 2>&1
+#if [ $? -eq 0 ]; then
+#  log "rsync successful"
+#else
+#  log "rsync failed"
+#fi
 rm -f $STAMPS/lock
 log "Quitting"
