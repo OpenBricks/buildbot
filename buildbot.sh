@@ -47,8 +47,8 @@ create_img () {
   cd `ls .`
   if [ -f make-sdcard ] ; then
     a=`grep DEFAULT_TARGET= make-sdcard | cut -d= -f2 | cut -d\" -f2`
-    b=`ls *.bz2`
-    c=`echo $b | sed -e 's/.tar.bz2//'`.img
+    b=`ls *.xz`
+    c=`echo $b | sed -e 's/.tar.xz//'`.img
     if [ "$TARGET" = "cuboxi" ] ; then
       for i in c1solo c1dl c1d c1q cubox-i1 cubox-i2 cubox-i2ultra cubox-i4pro ; do
         sudo ./make-sdcard $c-$i $b $a $i
