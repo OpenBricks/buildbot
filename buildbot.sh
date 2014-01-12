@@ -50,7 +50,7 @@ create_img () {
     b=`ls *.xz`
     c=`echo $b | sed -e 's/.tar.xz//'`.img
     if [ "$a" = "cuboxi" ] ; then
-      for i in c1solo c1dl c1d c1q cubox-i1 cubox-i2 cubox-i2ultra cubox-i4pro ; do
+      for i in c1solo c1dl c1d c1q cubox-i ; do
         sudo ./make-sdcard $c-$i $b $i
       done
     else
