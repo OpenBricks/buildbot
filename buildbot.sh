@@ -164,6 +164,8 @@ for config_f in $conf_enable ; do
   log "Making $NAME"
   make >> $BUILDLOG 2>&1
   if [ $? -eq 0 ]; then
+    local_rev=`hg identify -n`
+    echo "Build failed : local revision is $local_rev" >> $BUILDLOG 2>&1
     log "$NAME build successful"
     echo $DATE > "$STAMPS/$REPONAME/$NAME"
     mkdir -p "$SNAPSHOTSD/$REPONAME/$NAME/$DATE"
