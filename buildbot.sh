@@ -1,7 +1,7 @@
 #!/bin/sh
 BASE=/home/geexbox/bot/buildbot
 REPONAME=openbricks
-REPOURL="http://hg.openbricks.org/openbricks"
+REPOURL="https://github.com/OpenBricks/openbricks.git"
 REPO=$BASE/src/$REPONAME
 SOURCES=$BASE/src/sources
 BUILD=$BASE/build
@@ -38,7 +38,7 @@ Attached, the log messages
 buildbot
 EOF
 
-mpack -s "[buildbot] $NAME failed to build" -d /tmp/mesg.txt $BUILDLOG.bz2 tomlohave@gmail.com nicknickolaev@gmail.com openbricks-devel@googlegroups.com r.ihle@s-t.de
+mpack -s "[buildbot] $NAME failed to build" -d /tmp/mesg.txt $BUILDLOG.bz2 tomlohave@gmail.com nicknickolaev@gmail.com r.ihle@s-t.de
 
 }
 
@@ -64,12 +64,12 @@ else
 fi
 if [ ! -d $REPO ]; then
   log "Cloning repo"
-  hg clone $REPOURL $REPO > /dev/null 2>&1
+  git clone $REPOURL $REPO > /dev/null 2>&1
 else
   log "Pulling repo"
-  (cd $REPO; hg pull -u > /dev/null 2>&1)
+  (cd $REPO; git pull -u > /dev/null 2>&1)
 fi
-REV=`hg identify $REPO`
+REV=`git log -1 --pretty="%h"`
 if [ "$REV" = "$OLDREV" ]; then
   log "Nothing new"
 else
@@ -87,12 +87,12 @@ log "Building $NAME"
 if [ ! -d "$NAME" ]; then
   log "Cloning $NAME"
   rm -f $STAMPS/$NAME
-  hg clone $REPO $NAME > $BUILDLOG
+  git clone $REPO $NAME > $BUILDLOG
 fi
 rm -f "$BUILDLOG"
 cd $NAME
-hg update -C >> $BUILDLOG 2>&1
-hg pull -u >> $BUILDLOG 2>&1
+#hg update -C >> $BUILDLOG 2>&1
+git pull -u >> $BUILDLOG 2>&1
 cd DOCS
 make clean >> $BUILDLOG 2>&1
 if [ $? -ne 0 ]; then
@@ -126,7 +126,7 @@ for config_f in $conf_enable ; do
   if [ ! -d "$NAME" ]; then
     log "Cloning $NAME"
     rm -f $STAMPS/$NAME
-    hg clone $REPO $NAME > $BUILDLOG 
+    git clone $REPO $NAME > $BUILDLOG 
     ln -s $SOURCES $NAME/sources
     ln -s $STAMPSGET $NAME/.stamps
   fi
@@ -138,8 +138,8 @@ for config_f in $conf_enable ; do
   rm -f "$BUILDLOG"
   rm -f "$STAMPS/$REPONAME/$NAME"
   cd $NAME
-  hg update -C >> $BUILDLOG 2>&1
-  hg pull -u >> $BUILDLOG 2>&1
+#  hg update -C >> $BUILDLOG 2>&1
+  git pull -u >> $BUILDLOG 2>&1
   ./scripts/kconfiginit >> $BUILDLOG 2>&1
   if grep -q 'CONFIG_OPT_TARGET_FLAT=y' config/defconfigs/$NAME.conf; then
     sed \
@@ -164,7 +164,7 @@ for config_f in $conf_enable ; do
   log "Making $NAME"
   make >> $BUILDLOG 2>&1
   if [ $? -eq 0 ]; then
-    local_rev=`hg identify -n`
+    local_rev=`git log -1 --pretty="%h"`
     echo "Build failed : local revision is $local_rev" >> $BUILDLOG 2>&1
     log "$NAME build successful"
     echo $DATE > "$STAMPS/$REPONAME/$NAME"
