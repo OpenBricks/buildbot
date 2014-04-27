@@ -69,7 +69,11 @@ else
   log "Pulling repo"
   (cd $REPO; git pull -u > /dev/null 2>&1)
 fi
+
+cd $REPO
 REV=`git log -1 --pretty="%h"`
+cd ..
+
 if [ "$REV" = "$OLDREV" ]; then
   log "Nothing new"
 else
