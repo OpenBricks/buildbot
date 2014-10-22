@@ -117,6 +117,7 @@ fi
 
 find $SNAPSHOTS/openbricks/geexbox-xbmc-*/* -mtime +10 -delete
 find $SNAPSHOTS/data/openbricks/geexbox-xbmc-*/* -mtime +10 -delete
+find $LOGS/$REPONAME/*.log* -mtime +10 -delete
 
 # build configs
 conf_enable="a10-cubieboard armada5xx-cubox bcm2708-raspberrypi i386-generic imx6-cuboxi imx6-tbs2910 imx6-utilite x86_64-generic"
