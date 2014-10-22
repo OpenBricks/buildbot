@@ -27,6 +27,8 @@ sendsnapshot ()
   if [ -f $LOGS/rsynchfailed ] ; then
     rm $LOGS/rsynchfailed
   fi
+  log "Rsyncing build logs to fry"
+  rsync -t --size-only --bwlimit=$BWLIMIT --archive --delete --log-file=/tmp/rlog --partial $LOGS/openbricks/*.bz2 buildbot@fry.geexbox.org:/data/logs-buildbot >> $BUILDLOG 2>&1
   log "Rsyncing snapshots to fry"
   log "rsync -t --size-only --bwlimit=$BWLIMIT --archive --delete --log-file=/tmp/rlog --partial $SNAPSHOTSD buildbot@fry.geexbox.org:/data/snapshots"
   rsync -t --size-only --bwlimit=$BWLIMIT --archive --delete --log-file=/tmp/rlog --partial $SNAPSHOTSD buildbot@fry.geexbox.org:/data/snapshots/ >> $BUILDLOG 2>&1
