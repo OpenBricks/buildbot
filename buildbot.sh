@@ -170,7 +170,7 @@ for config_f in $conf_enable ; do
   make >> $BUILDLOG 2>&1
   if [ $? -eq 0 ]; then
     local_rev=`git log -1 --pretty="%h"`
-    echo "Build failed : local revision is $local_rev" >> $BUILDLOG 2>&1
+    echo "Build successful : local revision is $local_rev" >> $BUILDLOG 2>&1
     log "$NAME build successful"
     echo $DATE > "$STAMPS/$REPONAME/$NAME"
     mkdir -p "$SNAPSHOTSD/$REPONAME/$NAME/$DATE"
@@ -189,6 +189,7 @@ for config_f in $conf_enable ; do
     lbzip2 -9 $BUILDLOG
   else
     log "Archiving $NAME log"
+    echo "Build failed : local revision is $local_rev" >> $BUILDLOG 2>&1
     lbzip2 -9 $BUILDLOG
     log "$NAME build failed"
     mailfail build
