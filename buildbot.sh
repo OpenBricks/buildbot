@@ -167,9 +167,9 @@ for config_f in $conf_enable ; do
   fi
   rm -rf binaries
   log "Making $NAME"
+  local_rev=`git log -1 --pretty="%h"`
   make >> $BUILDLOG 2>&1
   if [ $? -eq 0 ]; then
-    local_rev=`git log -1 --pretty="%h"`
     echo "Build successful : local revision is $local_rev" >> $BUILDLOG 2>&1
     log "$NAME build successful"
     echo $DATE > "$STAMPS/$REPONAME/$NAME"
