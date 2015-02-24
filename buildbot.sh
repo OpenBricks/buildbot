@@ -120,7 +120,7 @@ find $SNAPSHOTS/data/openbricks/geexbox-xbmc-*/* -mtime +10 -delete
 find $LOGS/$REPONAME/*.log* -mtime +10 -delete
 
 # build configs
-conf_enable="bcm2709-raspberrypi2 a10-cubieboard armada5xx-cubox bcm2708-raspberrypi i386-generic imx6-cuboxi imx6-tbs2910 imx6-utilite x86_64-generic"
+conf_enable="a10-cubieboard armada5xx-cubox bcm2708-raspberrypi bcm2709-raspberrypi2 i386-generic imx6-cuboxi imx6-utilite x86_64-generic"
 for config_f in $conf_enable ; do
   conffile="$REPO/config/defconfigs/geexbox-xbmc-$config_f.conf"
   cd $BUILD
