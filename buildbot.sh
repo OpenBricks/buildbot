@@ -212,3 +212,7 @@ done
 
 rm -f $STAMPS/lock
 log "Quitting"
+cp $LOGFILE $LOGS/$REPONAME/$REPONAME.$DATE.log
+echo "" > $LOGFILE
+lbzip2 -9 $LOGS/$REPONAME/$REPONAME.$DATE.log
+
