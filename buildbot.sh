@@ -121,8 +121,8 @@ else
   fi
 fi
 
-find $SNAPSHOTS/openbricks/geexbox-xbmc-*/* -mtime +10 -delete
-find $SNAPSHOTS/data/openbricks/geexbox-xbmc-*/* -mtime +10 -delete
+#find $SNAPSHOTS/openbricks/geexbox-xbmc-*/* -mtime +10 -delete
+#find $SNAPSHOTS/data/openbricks/geexbox-xbmc-*/* -mtime +10 -delete
 find $LOGS/$REPONAME/*.log* -mtime +10 -delete
 
 # build configs
@@ -188,7 +188,11 @@ for config_f in $conf_enable ; do
     here=`pwd`
     create_img $SNAPSHOTSD/$REPONAME/$NAME/$DATE
     cd $here
+    clean_old_data $SNAPSHOTSD/$REPONAME/$NAME
+    cd $here
     rm -f $SNAPSHOTS/$REPONAME/$NAME/latest
+    clean_old_data $SNAPSHOTS/$REPONAME/$NAME
+    cd $here
     ln -sf $DATE "$SNAPSHOTS/$REPONAME/$NAME/latest"
     ln -sf ../../data/$REPONAME/$NAME/$DATE $SNAPSHOTS/$REPONAME/$NAME/$DATE
 # delete all *-dbg_* packages
