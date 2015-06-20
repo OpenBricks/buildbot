@@ -53,6 +53,12 @@ create_img () {
   fi
 }
 
+clean_old_data () {
+  # keep only 3 builds
+    cd $1
+    ls -dt ./* | tail -n +4 | xargs rm -rf || true
+}
+
 mkdir -p $BUILD $SOURCES $SNAPSHOTS $SNAPSHOTSD $STAMPS/$REPONAME $LOGS $BASE/src/.stamps
 log "Starting"
 if [ -r $STAMPS/lock ]; then
