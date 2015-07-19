@@ -34,7 +34,7 @@ log() {
 }
 
 compress() {
-  #lbzip2 -9 $1
+  #lbzip2 -9f $1
   xz -zfe $1
 }
 
@@ -243,6 +243,8 @@ for c in $ACTIVE_CONFIGS; do
 
     make >> $BUILDLOG 2>&1
     if [ $? -ne 0 ]; then
+      make quickclean > /dev/null 2>&1
+
       log "Archiving $CONFNAME log"
       echo "Build failed : local revision is $local_rev" >> $BUILDLOG 2>&1
       compress $BUILDLOG
@@ -255,6 +257,7 @@ for c in $ACTIVE_CONFIGS; do
     echo "Build successful : local revision is $local_rev" >> $BUILDLOG 2>&1
     log "$CONFNAME build successful"
     echo $DATE > "$STAMPS/$REPONAME/$CONFNAME"
+    
     mkdir -p "$SNAPSHOTSD/$REPONAME/$CONFNAME/$DATE"
     mkdir -p "$SNAPSHOTS/$REPONAME/$CONFNAME"
     cp -PR binaries/* "$SNAPSHOTSD/$REPONAME/$CONFNAME/$DATE"
@@ -274,10 +277,10 @@ for c in $ACTIVE_CONFIGS; do
     done
     ln -sf $DATE $SNAPSHOTS/$REPONAME/$CONFNAME/latest
 
+    make quickclean > /dev/null 2>&1
+
     log "Archiving $CONFNAME log"
     compress $BUILDLOG
-    
-    make quickclean
   fi
 done
 
