@@ -1,5 +1,6 @@
 #!/bin/sh
 REPONAME=openbricks
+REPOBRANCH=master
 REPOURL="https://github.com/OpenBricks/openbricks.git"
 REPOOWNERS="tomlohave@gmail.com nicknickolaev@gmail.com r.ihle@s-t.de"
 
@@ -70,6 +71,19 @@ clean_old_data () {
   ls -dt $1/* | tail -n +4 | xargs rm -rf || true
 }
 
+git_pull_branch () {
+  rm -f .GIT_REVISION
+  git fetch origin >> $2 2>&1
+  git branch $1 -t origin/$1 >> $2 2>&1 || true
+  if git branch -l | grep -q -w $1; then
+    git checkout $1 >> $2 2>&1
+    git merge origin/$1 >> $2 2>&1
+    git log -1 --pretty="%h" > .GIT_REVISION
+  else
+    echo "Branch $1 does not exist" >> $2
+  fi
+}
+
 prepare_to_build() {
   CONFNAME=$1
   CONFFILE=$2
@@ -77,9 +91,9 @@ prepare_to_build() {
   # remove symlink
   [ -L /tmp/openbricks ] && rm /tmp/openbricks
 
-  mkdir -p $LOGS/$REPONAME
   BUILDLOG="$LOGS/$REPONAME/$CONFNAME.$DATE.log"
 
+  # create sub-repo
   log "Building $CONFNAME"
   if [ ! -d "$CONFNAME" ]; then
     log "Cloning $CONFNAME"
@@ -87,30 +101,34 @@ prepare_to_build() {
     git clone $REPO $CONFNAME > $BUILDLOG
     
     # set links to source packages and download timestamps
-    if [ -n "$CONFFILE" ]; then
-      ln -s $SOURCES $CONFNAME/sources
-      ln -s $STAMPSGET $CONFNAME/.stamps
-    fi
+    ln -s $SOURCES $CONFNAME/sources
+    ln -s $STAMPSGET $CONFNAME/.stamps
   fi
   
+  # refresh sub-repo
+  rm -f $CONFNAME/.NEED_REBUILD
   if [ -z "$CONFFILE" ] || \
      [ ! -e "$STAMPS/$REPONAME/$CONFNAME" ] || \
      [ "$CONFFILE" -nt "$STAMPS/$REPONAME/$CONFNAME" ]; then  
     rm -f "$BUILDLOG"
     rm -f "$STAMPS/$REPONAME/$CONFNAME"
 
-    (cd $CONFNAME; git pull -u >> $BUILDLOG 2>&1)
-    touch $CONFNAME/NEED_REBUILD
+    log "Pulling $CONFNAME/$REPOBRANCH"
+    (cd $CONFNAME; git_pull_branch $REPOBRANCH $BUILDLOG)    
+    if [ -r $CONFNAME/.GIT_REVISION ]; then
+      touch $CONFNAME/.NEED_REBUILD
+    else
+      log "Branch $REPOBRANCH does not exist, skipping"
+    fi
   else
     log "Build $CONFNAME is up to date"
-    rm -f $CONFNAME/NEED_REBUILD
   fi
 }
 
 
 # Create directories
+mkdir -p $BUILD $SOURCES $SNAPSHOTS $SNAPSHOTSD $STAMPS/$REPONAME $LOGS/$REPONAME $BASE/src/.stamps
 log "Starting"
-mkdir -p $BUILD $SOURCES $SNAPSHOTS $SNAPSHOTSD $STAMPS/$REPONAME $LOGS $BASE/src/.stamps
 
 # Check for re-entry
 if [ -r $STAMPS/lock ]; then
@@ -119,24 +137,30 @@ if [ -r $STAMPS/lock ]; then
 fi
 
 /bin/echo -n $$ > $STAMPS/lock
+
+# delete old builds (!!! forces a full rebuild each time !!!)
 rm -rf $BUILD/*
 
 # delete old logs
-find $LOGS/$REPONAME/*.log* -mtime +10 -delete
+find $LOGS/$REPONAME -name *.log* -mtime +10 -delete
 
-# Refresh repo
+
+# Create repo
 if [ ! -d $REPO ]; then
   log "Cloning repo $REPONAME"
   git clone $REPOURL $REPO > /dev/null 2>&1
-else
-  log "Pulling repo $REPONAME"
-  (cd $REPO; git pull -u > /dev/null 2>&1)
 fi
 
-# Check for revision change
-cd $REPO
-REV=`git log -1 --pretty="%h"`
-cd ..
+# Refresh repo
+log "Pulling $REPONAME/$REPOBRANCH"
+(cd $REPO; git_pull_branch $REPOBRANCH /dev/null)
+if [ ! -r $REPO/.GIT_REVISION ]; then
+  log "Branch $REPOBRANCH does not exist, aborting."
+  rm -f $STAMPS/lock
+  exit 1
+fi
+
+REV=`cat $REPO/.GIT_REVISION`
 
 if [ -r $STAMPS/$REPONAME/rev ]; then
   OLDREV=`cat $STAMPS/$REPONAME/rev`
@@ -155,7 +179,7 @@ fi
 cd $BUILD
 prepare_to_build docs ""
 
-if [ -e $CONFNAME/NEED_REBUILD ]; then
+if [ -e $CONFNAME/.NEED_REBUILD ]; then
   cd $CONFNAME/DOCS
 
   log "Cleaning $CONFNAME"
@@ -187,7 +211,7 @@ for c in $ACTIVE_CONFIGS; do
   cd $BUILD
   prepare_to_build "$c" "$REPO/config/defconfigs/$c.conf"
 
-  if [ -e $CONFNAME/NEED_REBUILD ]; then
+  if [ -e $CONFNAME/.NEED_REBUILD ]; then
     cd $CONFNAME
     
     log "Configuring $CONFNAME"
