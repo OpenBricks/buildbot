@@ -56,8 +56,10 @@ sendsnapshotlink () {
   fi
 }
 
+
+# Create directories
+mkdir -p $BUILD $SOURCES $SNAPSHOTS $SNAPSHOTSD $STAMPS/$REPONAME $LOGS/$REPONAME $BASE/src/.stamps
 log "Starting rsync to fry ..."
-mkdir -p $BUILD $SOURCES $SNAPSHOTS $SNAPSHOTSD $STAMPS/$REPONAME $LOGS $BASE/src/.stamps
 
 # Check for re-entry
 if [ -r $STAMPS/lockrsync ]; then
