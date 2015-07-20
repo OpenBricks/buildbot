@@ -271,7 +271,7 @@ for c in $ACTIVE_CONFIGS; do
 
     # re-create links
     rm -f $SNAPSHOTS/$REPONAME/$CONFNAME/*    
-    for d in $SNAPSHOTSD/$REPONAME/$CONFNAME; do
+    for d in $SNAPSHOTSD/$REPONAME/$CONFNAME/*; do
       n=`basename $d`
       ln -sf ../../data/$REPONAME/$CONFNAME/$n $SNAPSHOTS/$REPONAME/$CONFNAME/$n
     done
