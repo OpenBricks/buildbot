@@ -58,7 +58,7 @@ sendsnapshotlink () {
 
 
 # Create directories
-mkdir -p $BUILD $SOURCES $SNAPSHOTS $SNAPSHOTSD $STAMPS/$REPONAME $LOGS/$REPONAME $BASE/src/.stamps
+mkdir -p $SNAPSHOTS/$REPONAME $SNAPSHOTSD/$REPONAME $STAMPS/$REPONAME $LOGS/$REPONAME
 log "Starting rsync to fry ..."
 
 # Check for re-entry
