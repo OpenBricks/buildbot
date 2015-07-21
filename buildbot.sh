@@ -127,7 +127,7 @@ prepare_to_build() {
 
 
 # Create directories
-mkdir -p $BUILD $SOURCES $SNAPSHOTS $SNAPSHOTSD $STAMPS/$REPONAME $LOGS/$REPONAME $BASE/src/.stamps
+mkdir -p $BUILD $SOURCES $STAMPSGET $SNAPSHOTS/$REPONAME $SNAPSHOTSD/$REPONAME $STAMPS/$REPONAME $LOGS/$REPONAME
 log "Starting"
 
 # Check for re-entry
@@ -141,8 +141,17 @@ fi
 # delete old builds (!!! forces a full rebuild each time !!!)
 rm -rf $BUILD/*
 
+# delete inactive snapshots
+for d in $SNAPSHOTSD/$REPONAME/*; do
+  n=`basename $d`
+  if echo "$ACTIVE_CONFIGS" | grep -qvw $n; then
+    log "Removing inactive snapshot $n"
+    rm -rf $d $SNAPSHOTS/$REPONAME/$n $LOGS/$REPONAME/$n.*
+  fi
+done
+
 # delete old logs
-find $LOGS/$REPONAME -name *.log* -mtime +10 -delete
+find $LOGS/$REPONAME -name *.log* -mtime +14 -delete
 
 
 # Create repo
