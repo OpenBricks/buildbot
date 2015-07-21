@@ -296,6 +296,7 @@ done
 
 # rotate log file
 log "Quitting"
+touch $LOGFILE
 mv -f $LOGFILE $LOGS/$REPONAME/$REPONAME.$DATE.log
 compress $LOGS/$REPONAME/$REPONAME.$DATE.log
 
