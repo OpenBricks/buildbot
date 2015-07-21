@@ -212,6 +212,8 @@ if [ -e $CONFNAME/.NEED_REBUILD ]; then
       ln -sf $DATE "$SNAPSHOTS/$REPONAME/$CONFNAME/latest"
     fi
   fi
+
+  compress $BUILDLOG
 fi
 
 
@@ -240,6 +242,7 @@ for c in $ACTIVE_CONFIGS; do
     log "Cleaning $CONFNAME"
     make quickclean >> $BUILDLOG 2>&1
     if [ $? -ne 0 ]; then
+      compress $BUILDLOG
       log "$CONFNAME quickclean failed"
       mailfail clean
       rm -f "$STAMPS/$REPONAME/$CONFNAME"
