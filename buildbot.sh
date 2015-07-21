@@ -74,8 +74,8 @@ clean_old_data () {
 git_pull_branch () {
   rm -f .GIT_REVISION
   git fetch origin >> $2 2>&1
-  git branch $1 -t origin/$1 >> $2 2>&1 || true
-  if git branch -l | grep -q -w $1; then
+  git branch $1 -t origin/$1 > /dev/null 2>&1 || true
+  if git branch -l | grep -qw $1; then
     git checkout $1 >> $2 2>&1
     git merge origin/$1 >> $2 2>&1
     git log -1 --pretty="%h" > .GIT_REVISION
