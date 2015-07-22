@@ -186,7 +186,7 @@ fi
 
 # build documentation
 cd $BUILD
-prepare_to_build docs ""
+prepare_to_build docs "$STAMPS/$REPONAME/rev"
 
 if [ -e $CONFNAME/.NEED_REBUILD ]; then
   cd $CONFNAME/DOCS
@@ -210,6 +210,8 @@ if [ -e $CONFNAME/.NEED_REBUILD ]; then
       clean_old_data "$SNAPSHOTS/$REPONAME/$CONFNAME"
 
       ln -sf $DATE "$SNAPSHOTS/$REPONAME/$CONFNAME/latest"
+
+      echo $DATE > "$STAMPS/$REPONAME/$CONFNAME"
     fi
   fi
 
