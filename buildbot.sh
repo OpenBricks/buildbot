@@ -15,7 +15,7 @@ ACTIVE_CONFIGS=" \
   geexbox-xbmc-x86_64-generic \
 "
 
-BASE=$HOME/bot/buildbot
+BASE=/home/geexbox/bot/buildbot
 REPO=$BASE/src/$REPONAME
 SOURCES=$BASE/src/sources
 BUILD=$BASE/build

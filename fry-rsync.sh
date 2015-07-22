@@ -3,7 +3,7 @@ REPONAME=openbricks
 REPOURL="https://github.com/OpenBricks/openbricks.git"
 SYNCTARGET="buildbot@fry.geexbox.org"
 
-BASE=$HOME/bot/buildbot
+BASE=/home/geexbox/bot/buildbot
 REPO=$BASE/src/$REPONAME
 SOURCES=$BASE/src/sources
 BUILD=$BASE/build
