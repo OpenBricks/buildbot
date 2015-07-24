@@ -145,7 +145,7 @@ rm -rf $BUILD/*
 
 # delete inactive snapshots
 for d in $SNAPSHOTSD/$REPONAME/*; do
-  if echo $d | grep -qv "*"; then
+  if echo "$d" | grep -qv "*"; then
     n=`basename $d`
     if echo "$ACTIVE_CONFIGS" | grep -qvw $n; then
       log "Removing inactive snapshot $n"
