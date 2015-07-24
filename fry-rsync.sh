@@ -14,7 +14,7 @@ LOGS=$BASE/logs
 LOGFILE=$BASE/logs/$REPONAME.log
 STAMPSGET=$BASE/src/.stamps
 
-BWLIMIT=90
+BWLIMIT=100
 XFERLOG=/tmp/rlog
 BUILDLOG=$LOGS/rsynclogs
 
