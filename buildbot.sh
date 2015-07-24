@@ -35,6 +35,7 @@ log() {
 }
 
 compress() {
+  [ -n "$2" ] && log "Archiving log $2"
   #lbzip2 -9f $1
   xz -zfe $1
 }
@@ -93,6 +94,7 @@ prepare_to_build() {
   [ -L /tmp/openbricks ] && rm /tmp/openbricks
 
   BUILDLOG="$LOGS/$REPONAME/$CONFNAME.$DATE.log"
+  rm -f "$BUILDLOG"
 
   # create sub-repo
   log "Building $CONFNAME"
@@ -111,7 +113,6 @@ prepare_to_build() {
   if [ -z "$CONFFILE" ] || \
      [ ! -e "$STAMPS/$REPONAME/$CONFNAME" ] || \
      [ "$CONFFILE" -nt "$STAMPS/$REPONAME/$CONFNAME" ]; then  
-    rm -f "$BUILDLOG"
     rm -f "$STAMPS/$REPONAME/$CONFNAME"
 
     log "Pulling $CONFNAME/$REPOBRANCH"
@@ -122,6 +123,7 @@ prepare_to_build() {
       log "Branch $REPOBRANCH does not exist, skipping"
     fi
   else
+    rm -f "$BUILDLOG"
     log "Build $CONFNAME is up to date"
   fi
 }
@@ -144,15 +146,17 @@ rm -rf $BUILD/*
 
 # delete inactive snapshots
 for d in $SNAPSHOTSD/$REPONAME/*; do
-  n=`basename $d`
-  if echo "$ACTIVE_CONFIGS" | grep -qvw $n; then
-    log "Removing inactive snapshot $n"
-    rm -rf $d $SNAPSHOTS/$REPONAME/$n $LOGS/$REPONAME/$n.*
+  if echo "$d" | grep -qv "*"; then
+    n=`basename $d`
+    if echo "$ACTIVE_CONFIGS" | grep -qvw $n; then
+      log "Removing inactive snapshot $n"
+      rm -rf $d $SNAPSHOTS/$REPONAME/$n $LOGS/$REPONAME/$n.*
+    fi
   fi
 done
 
 # delete old logs
-find $LOGS/$REPONAME -name *.log* -mtime +14 -delete
+find $LOGS/$REPONAME -name "*.log*" -mtime +14 -delete
 
 
 # Create repo
@@ -216,7 +220,7 @@ if [ -e $CONFNAME/.NEED_REBUILD ]; then
     fi
   fi
 
-  compress $BUILDLOG
+  compress $BUILDLOG $CONFNAME
 fi
 
 
@@ -245,10 +249,11 @@ for c in $ACTIVE_CONFIGS; do
     log "Cleaning $CONFNAME"
     make quickclean >> $BUILDLOG 2>&1
     if [ $? -ne 0 ]; then
-      compress $BUILDLOG
       log "$CONFNAME quickclean failed"
+      compress $BUILDLOG $CONFNAME
       mailfail clean
       rm -f "$STAMPS/$REPONAME/$CONFNAME"
+      
       continue
     fi
     
@@ -258,18 +263,17 @@ for c in $ACTIVE_CONFIGS; do
 
     make >> $BUILDLOG 2>&1
     if [ $? -ne 0 ]; then
-      make quickclean > /dev/null 2>&1
-
-      log "Archiving $CONFNAME log"
-      echo "Build failed : local revision is $local_rev" >> $BUILDLOG 2>&1
-      compress $BUILDLOG
+      echo "Build failed : local revision is $local_rev" >> $BUILDLOG
       log "$CONFNAME build failed"
+      compress $BUILDLOG $CONFNAME
       mailfail build
       rm -f "$STAMPS/$REPONAME/$CONFNAME"
+
+      make quickclean > /dev/null 2>&1
       continue
     fi
 
-    echo "Build successful : local revision is $local_rev" >> $BUILDLOG 2>&1
+    echo "Build successful : local revision is $local_rev" >> $BUILDLOG
     log "$CONFNAME build successful"
     echo $DATE > "$STAMPS/$REPONAME/$CONFNAME"
     
@@ -277,7 +281,7 @@ for c in $ACTIVE_CONFIGS; do
     mkdir -p "$SNAPSHOTS/$REPONAME/$CONFNAME"
     cp -PR binaries/* "$SNAPSHOTSD/$REPONAME/$CONFNAME/$DATE"
     # delete debug packages
-    find "$SNAPSHOTSD/$REPONAME/$CONFNAME/$DATE" -name *-dbg_*.opk -delete
+    find "$SNAPSHOTSD/$REPONAME/$CONFNAME/$DATE" -name "*-dbg_*.opk" -delete
     # create disk images
     create_img $SNAPSHOTSD/$REPONAME/$CONFNAME/$DATE
 
@@ -293,9 +297,8 @@ for c in $ACTIVE_CONFIGS; do
     ln -sf $DATE $SNAPSHOTS/$REPONAME/$CONFNAME/latest
 
     make quickclean > /dev/null 2>&1
-
-    log "Archiving $CONFNAME log"
-    compress $BUILDLOG
+    
+    compress $BUILDLOG $CONFNAME
   fi
 done
 
