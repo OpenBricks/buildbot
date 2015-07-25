@@ -25,7 +25,7 @@ log() {
 }
 
 sendsnapshot () {
-  rsync_args="-t --size-only --bwlimit=$BWLIMIT --archive --delete --log-file=$XFERLOG --partial $LOGS/$REPONAME/*.?z* $SYNCTARGET:/data/logs-buildbot"
+  rsync_args="-t --size-only --bwlimit=$BWLIMIT --archive --log-file=$XFERLOG --partial $LOGS/$REPONAME/*.?z* $SYNCTARGET:/data/logs-buildbot"
   log "Rsyncing build logs: $rsync_args"
   rsync $rsync_args >> $BUILDLOG 2>&1
   
