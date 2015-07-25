@@ -29,8 +29,8 @@ sendsnapshot () {
   log "Rsyncing build logs: $rsync_args"
   rsync $rsync_args >> $BUILDLOG 2>&1
   
-  rsync_args="-t --size-only --bwlimit=$BWLIMIT --archive --delete --log-file=$XFERLOG --partial $SNAPSHOTSD $SYNCTARGET:/data/snapshots/"
-  log "Rsyncing snapshots: $rsync_args"  
+  rsync_args="-t --size-only --bwlimit=$BWLIMIT --archive --log-file=$XFERLOG --partial $SNAPSHOTSD $SYNCTARGET:/data/snapshots/"
+  log "Rsyncing snapshot data: $rsync_args"  
   rsync $rsync_args >> $BUILDLOG 2>&1
   
   if [ $? -eq 0 ]; then
@@ -45,7 +45,7 @@ sendsnapshot () {
 sendsnapshotlink () {
   if ! [ -f $LOGS/rsynchfailed ] ; then
     rsync_args="-t --size-only --bwlimit=$BWLIMIT --archive --delete --log-file=$XFERLOG --partial $SNAPSHOTS/* $SYNCTARGET:/data/snapshots"
-    log "Rsyncing snapshot link: $rsync_args"
+    log "Rsyncing snapshot links: $rsync_args"
     rsync $rsync_args >> $BUILDLOG 2>&1
     
     if [ $? -eq 0 ]; then
