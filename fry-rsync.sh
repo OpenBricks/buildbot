@@ -74,6 +74,7 @@ fi
 
 # Move old rsync log
 cat $BUILDLOG >> $LOGS/$REPONAME/rsync.$DATE.log
+cat $LOGFILE >> $LOGS/$REPONAME/rsync.$DATE.log
 rm -f $BUILDLOG
 xz -z < $LOGS/$REPONAME/rsync.$DATE.log > $LOGS/$REPONAME/1-rsync.$DATE.log.xz
 
