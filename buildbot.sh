@@ -146,10 +146,10 @@ rm -rf $BUILD/*
 
 # delete inactive snapshots
 for d in $SNAPSHOTSD/$REPONAME/*; do
-  if echo "$d" | grep -qv "\*"; then
+  if [ -d $d ]; then
     n=`basename $d`
     if echo "$ACTIVE_CONFIGS" | grep -qvw $n; then
-      log "Removing inactive snapshot $n"
+      log "Removing inactive platform $n"
       rm -rf $d $SNAPSHOTS/$REPONAME/$n $LOGS/$REPONAME/$n.*
     fi
   fi
