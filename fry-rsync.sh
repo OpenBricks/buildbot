@@ -18,7 +18,7 @@ PIDFILE=$STAMPS/lockrsync
 
 BWLIMIT=100
 XFERLOG=/tmp/rlog
-BUILDLOG=$LOGS/rsynclogs
+RSYNCLOG=$LOGS/rsynclogs
 
 DATE=`date +%Y%m%d`
 
@@ -30,13 +30,13 @@ log() {
 sendlogs () {
   rsync_args="-t --size-only --bwlimit=$BWLIMIT --archive --log-file=$XFERLOG --partial $LOGS/$REPONAME/*.?z* $SYNCTARGET:/data/logs-buildbot"
   log "Rsyncing build logs: $rsync_args"
-  rsync $rsync_args >> $BUILDLOG 2>&1
+  rsync $rsync_args >> $RSYNCLOG 2>&1
 }
 
 sendsnapshot () {  
   rsync_args="-t --size-only --bwlimit=$BWLIMIT --archive --log-file=$XFERLOG --partial $SNAPSHOTSD $SYNCTARGET:/data/snapshots/"
   log "Rsyncing snapshot data: $rsync_args"  
-  rsync $rsync_args >> $BUILDLOG 2>&1
+  rsync $rsync_args >> $RSYNCLOG 2>&1
   
   if [ $? -eq 0 ]; then
     log "rsync successful"
@@ -51,7 +51,7 @@ sendsnapshotlink () {
   if ! [ -f $LOGS/rsynchfailed ] ; then
     rsync_args="-t --size-only --bwlimit=$BWLIMIT --archive --delete --log-file=$XFERLOG --partial $SNAPSHOTS/* $SYNCTARGET:/data/snapshots"
     log "Rsyncing snapshot links: $rsync_args"
-    rsync $rsync_args >> $BUILDLOG 2>&1
+    rsync $rsync_args >> $RSYNCLOG 2>&1
     
     if [ $? -eq 0 ]; then
       log "rsync successful (link)"
@@ -75,9 +75,9 @@ fi
 /bin/echo -n $$ > $PIDFILE
 
 # Move old rsync log
-cat $BUILDLOG >> $LOGS/$REPONAME/rsync.$DATE.log
+cat $RSYNCLOG >> $LOGS/$REPONAME/rsync.$DATE.log
 cat $LOGFILE >> $LOGS/$REPONAME/rsync.$DATE.log
-rm -f $BUILDLOG
+rm -f $RSYNCLOG
 xz -z < $LOGS/$REPONAME/rsync.$DATE.log > $LOGS/$REPONAME/1-rsync.$DATE.log.xz
 
 sendlogs
