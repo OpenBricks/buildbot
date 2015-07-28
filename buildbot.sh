@@ -156,7 +156,7 @@ for d in $SNAPSHOTSD/$REPONAME/*; do
 done
 
 # delete old logs
-find $LOGS/$REPONAME -name "\*.log\*" -mtime +14 -delete
+find $LOGS/$REPONAME -name "\*.log\*" -mtime +7 -delete
 
 
 # Create repo
