@@ -58,11 +58,13 @@ EOF
 }
 
 create_img () {
+  local name=`basename *.tar.xz .tar.xz`
   if [ -f make-sdcard ]; then
-    a=`grep DEFAULT_TARGET= make-sdcard | cut -d= -f2 | cut -d\" -f2`
-    b=`ls *.xz`
-    c=`echo $b | sed -e 's/.tar.xz//'`.img
-    sudo ./make-sdcard $c $b $a
+    sudo rm -f /tmp/$CONFNAME.img*
+    sudo ./make-sdcard /tmp/$CONFNAME.img $name.tar.xz
+    sudo chown --reference=$name.tar.xz /tmp/$CONFNAME.img*
+    [ -f /tmp/$CONFNAME.img.xz ] && mv /tmp/$CONFNAME.img.xz ./$name.img.xz
+    rm -f /tmp/$CONFNAME.img*
   fi
 }
 
