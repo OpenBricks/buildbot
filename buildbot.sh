@@ -17,15 +17,17 @@ ACTIVE_CONFIGS=" \
 "
 
 BASE=/home/geexbox/bot/buildbot
+
+BUILD=$BASE/build
 REPO=$BASE/src/$REPONAME
 SOURCES=$BASE/src/sources
-BUILD=$BASE/build
+STAMPSGET=$BASE/src/.stamps
 SNAPSHOTS=$BASE/snapshots
 SNAPSHOTSD=$BASE/snapshots/data
-STAMPS=$BASE/stamps
 LOGS=$BASE/logs
 LOGFILE=$BASE/logs/$REPONAME.log
-STAMPSGET=$BASE/src/.stamps
+STAMPS=$BASE/stamps
+PIDFILE=$STAMPS/lock
 
 DATE=`date +%Y%m%d`
 
@@ -134,12 +136,12 @@ mkdir -p $BUILD $SOURCES $STAMPSGET $SNAPSHOTS/$REPONAME $SNAPSHOTSD/$REPONAME $
 log "Starting"
 
 # Check for re-entry
-if [ -r $STAMPS/lock ]; then
-  log "Another buildbot instance (`cat $STAMPS/lock`) is running, aborting."
+if [ -r $PIDFILE ]; then
+  log "Another buildbot instance (`cat $PIDFILE`) is running, aborting."
   exit 1
 fi
 
-/bin/echo -n $$ > $STAMPS/lock
+/bin/echo -n $$ > $PIDFILE
 
 # delete old builds (!!! forces a full rebuild each time !!!)
 rm -rf $BUILD/*
@@ -170,7 +172,7 @@ log "Pulling $REPONAME/$REPOBRANCH"
 (cd $REPO; git_pull_branch $REPOBRANCH /dev/null)
 if [ ! -r $REPO/.GIT_REVISION ]; then
   log "Branch $REPOBRANCH does not exist, aborting."
-  rm -f $STAMPS/lock
+  rm -f $PIDFILE
   exit 1
 fi
 
@@ -312,5 +314,5 @@ touch $LOGFILE
 mv -f $LOGFILE $LOGS/$REPONAME/$REPONAME.$DATE.log
 compress $LOGS/$REPONAME/$REPONAME.$DATE.log
 
-rm -f $STAMPS/lock
+rm -f $PIDFILE
 exit 0
