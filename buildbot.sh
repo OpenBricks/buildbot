@@ -277,17 +277,20 @@ for c in $ACTIVE_CONFIGS; do
     log "$CONFNAME build successful"
     echo $DATE > "$STAMPS/$REPONAME/$CONFNAME"
     
+    # create data directory
     mkdir -p "$SNAPSHOTSD/$REPONAME/$CONFNAME/$DATE"
-    mkdir -p "$SNAPSHOTS/$REPONAME/$CONFNAME"
-    cp -PR binaries/* "$SNAPSHOTSD/$REPONAME/$CONFNAME/$DATE"
+    # move binaries
+    rm -rf "$SNAPSHOTSD/$REPONAME/$CONFNAME/$DATE/*"
+    mv binaries/binaries.* "$SNAPSHOTSD/$REPONAME/$CONFNAME/$DATE"
     # delete debug packages
     find "$SNAPSHOTSD/$REPONAME/$CONFNAME/$DATE" -name "\*-dbg_\*.opk" -delete
     # create disk images
     (cd $SNAPSHOTSD/$REPONAME/$CONFNAME/$DATE/binaries.*; create_img)
-
     # remove old snapshots
     clean_old_data $SNAPSHOTSD/$REPONAME/$CONFNAME
 
+    # create link directory
+    mkdir -p $SNAPSHOTS/$REPONAME/$CONFNAME
     # re-create links
     rm -f $SNAPSHOTS/$REPONAME/$CONFNAME/*    
     for d in $SNAPSHOTSD/$REPONAME/$CONFNAME/*; do
