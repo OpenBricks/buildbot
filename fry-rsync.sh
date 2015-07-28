@@ -4,15 +4,17 @@ REPOURL="https://github.com/OpenBricks/openbricks.git"
 SYNCTARGET="buildbot@fry.geexbox.org"
 
 BASE=/home/geexbox/bot/buildbot
+
+BUILD=$BASE/build
 REPO=$BASE/src/$REPONAME
 SOURCES=$BASE/src/sources
-BUILD=$BASE/build
+STAMPSGET=$BASE/src/.stamps
 SNAPSHOTS=$BASE/snapshots
 SNAPSHOTSD=$BASE/snapshots/data
-STAMPS=$BASE/stamps
 LOGS=$BASE/logs
 LOGFILE=$BASE/logs/$REPONAME.log
-STAMPSGET=$BASE/src/.stamps
+STAMPS=$BASE/stamps
+PIDFILE=$STAMPS/lockrsync
 
 BWLIMIT=100
 XFERLOG=/tmp/rlog
@@ -65,12 +67,12 @@ mkdir -p $SNAPSHOTS/$REPONAME $SNAPSHOTSD/$REPONAME $STAMPS/$REPONAME $LOGS/$REP
 log "Starting rsync to fry ..."
 
 # Check for re-entry
-if [ -r $STAMPS/lockrsync ]; then
-  log "Another rsync instance (`cat $STAMPS/lockrsync`) is running, aborting."
+if [ -r $PIDFILE ]; then
+  log "Another rsync instance (`cat $PIDFILE`) is running, aborting."
   exit 1
 fi
 
-/bin/echo -n $$ > $STAMPS/lockrsync
+/bin/echo -n $$ > $PIDFILE
 
 # Move old rsync log
 cat $BUILDLOG >> $LOGS/$REPONAME/rsync.$DATE.log
@@ -83,5 +85,5 @@ sendsnapshot
 sendsnapshotlink
 
 log "End of rsync"
-rm -f $STAMPS/lockrsync
+rm -f $PIDFILE
 exit 0
