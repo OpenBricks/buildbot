@@ -58,14 +58,12 @@ EOF
 }
 
 create_img () {
-  cd $1/*
   if [ -f make-sdcard ]; then
     a=`grep DEFAULT_TARGET= make-sdcard | cut -d= -f2 | cut -d\" -f2`
     b=`ls *.xz`
     c=`echo $b | sed -e 's/.tar.xz//'`.img
     sudo ./make-sdcard $c $b $a
   fi
-  cd -
 }
 
 clean_old_data () {
@@ -283,7 +281,7 @@ for c in $ACTIVE_CONFIGS; do
     # delete debug packages
     find "$SNAPSHOTSD/$REPONAME/$CONFNAME/$DATE" -name "\*-dbg_\*.opk" -delete
     # create disk images
-    create_img $SNAPSHOTSD/$REPONAME/$CONFNAME/$DATE
+    (cd $SNAPSHOTSD/$REPONAME/$CONFNAME/$DATE/binaries.*; create_img)
 
     # remove old snapshots
     clean_old_data $SNAPSHOTSD/$REPONAME/$CONFNAME
