@@ -6,6 +6,7 @@ REPOOWNERS="tomlohave@gmail.com nicknickolaev@gmail.com r.ihle@s-t.de"
 
 ACTIVE_CONFIGS=" \
   geexbox-kodi-imx6-cuboxi \
+  geexbox-kodi-imx6-utilite \
   geexbox-xbmc-a10-cubieboard \
   geexbox-xbmc-armada5xx-cubox \
   geexbox-xbmc-bcm2708-raspberrypi \
