@@ -282,11 +282,12 @@ for c in $ACTIVE_CONFIGS; do
     
     # create data directory
     mkdir -p "$SNAPSHOTSD/$REPONAME/$CONFNAME/$DATE"
-    # move binaries
     rm -rf "$SNAPSHOTSD/$REPONAME/$CONFNAME/$DATE/*"
-    mv binaries/binaries.* "$SNAPSHOTSD/$REPONAME/$CONFNAME/$DATE"
     # delete debug packages
-    find "$SNAPSHOTSD/$REPONAME/$CONFNAME/$DATE" -name "*-dbg_*.opk" -delete
+    find binaries/binaries.* -name "*-dbg_*.opk" -delete
+    # move binaries
+    mv binaries/binaries.* "$SNAPSHOTSD/$REPONAME/$CONFNAME/$DATE"
+
     # create disk images
     (cd $SNAPSHOTSD/$REPONAME/$CONFNAME/$DATE/binaries.*; create_img)
     # remove old snapshots
