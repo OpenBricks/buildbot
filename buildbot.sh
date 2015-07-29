@@ -159,7 +159,7 @@ for d in $SNAPSHOTSD/$REPONAME/*; do
 done
 
 # delete old logs
-find $LOGS/$REPONAME -name "\*.log\*" -mtime +7 -delete
+find $LOGS/$REPONAME -name "*.log*" -mtime +7 -delete
 
 
 # Create repo
@@ -286,7 +286,7 @@ for c in $ACTIVE_CONFIGS; do
     rm -rf "$SNAPSHOTSD/$REPONAME/$CONFNAME/$DATE/*"
     mv binaries/binaries.* "$SNAPSHOTSD/$REPONAME/$CONFNAME/$DATE"
     # delete debug packages
-    find "$SNAPSHOTSD/$REPONAME/$CONFNAME/$DATE" -name "\*-dbg_\*.opk" -delete
+    find "$SNAPSHOTSD/$REPONAME/$CONFNAME/$DATE" -name "*-dbg_*.opk" -delete
     # create disk images
     (cd $SNAPSHOTSD/$REPONAME/$CONFNAME/$DATE/binaries.*; create_img)
     # remove old snapshots
