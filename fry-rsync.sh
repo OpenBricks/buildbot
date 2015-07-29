@@ -77,6 +77,7 @@ fi
 # Move old rsync log
 cat $RSYNCLOG >> $LOGS/$REPONAME/rsync.$DATE.log
 cat $LOGFILE >> $LOGS/$REPONAME/rsync.$DATE.log
+ls -lisa /etc/cron* /run/lock >> $LOGS/$REPONAME/rsync.$DATE.log
 rm -f $RSYNCLOG
 xz -z < $LOGS/$REPONAME/rsync.$DATE.log > $LOGS/$REPONAME/1-rsync.$DATE.log.xz
 
