@@ -17,6 +17,8 @@ ACTIVE_CONFIGS=" \
   geexbox-xbmc-x86_64-generic \
 "
 
+CANCEL_PID=""
+
 BASE=/home/geexbox/bot/buildbot
 
 BUILD=$BASE/build
@@ -29,6 +31,7 @@ LOGS=$BASE/logs
 LOGFILE=$BASE/logs/$REPONAME.log
 STAMPS=$BASE/stamps
 PIDFILE=$STAMPS/lock
+BRKFILE=$STAMPS/cancel
 
 DATE=`date +%Y%m%d`
 
@@ -138,7 +141,14 @@ log "Starting"
 
 # Check for re-entry
 if [ -r $PIDFILE ]; then
-  log "Another buildbot instance (`cat $PIDFILE`) is running, aborting."
+  other=`cat $PIDFILE`
+  log "Another buildbot instance ($other) is running, aborting."
+  
+  if [ -n "$CANCEL_PID" ] && [ "$CANCEL_PID" = "$other" ]; then
+    log "Issuing cancel request for instance $other"
+    cp $PIDFILE $BRKFILE
+  fi
+  
   exit 1
 fi
 
@@ -306,6 +316,13 @@ for c in $ACTIVE_CONFIGS; do
     make quickclean > /dev/null 2>&1
     
     compress $BUILDLOG $CONFNAME
+  fi
+  
+  # check for cancel request
+  if [ -r $BRKFILE ] && [ "$$" = "`cat $BRKFILE`" ]; then
+    log "Cancelled after making $CONFNAME"
+    rm -f $BRKFILE
+    break
   fi
 done
 
