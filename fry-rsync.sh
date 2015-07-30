@@ -19,6 +19,7 @@ PIDFILE=$STAMPS/lockrsync
 BWLIMIT=100
 XFERLOG=/tmp/rlog
 RSYNCLOG=$LOGS/rsynclogs
+STATUSLOG=$LOGS/statuslogs
 
 DATE=`date +%Y%m%d`
 
@@ -76,11 +77,16 @@ fi
 
 # Move old rsync log
 cat $RSYNCLOG >> $LOGS/$REPONAME/rsync.$DATE.log
-cat $LOGFILE >> $LOGS/$REPONAME/rsync.$DATE.log
-rm -f $LOGS/$REPONAME/2-scripts.xz
-ls -lisa /home/geexbox /home/geexbox/buildbot /home/geexbox/bot /home/geexbox/bot/buildbot /var/spool/cron/crontabs >> $LOGS/$REPONAME/rsync.$DATE.log
-rm -f $RSYNCLOG
-xz -z < $LOGS/$REPONAME/rsync.$DATE.log > $LOGS/$REPONAME/1-rsync.$DATE.log.xz
+date -R > $RSYNCLOG
+
+echo "--------------------------------------------------------------------------------------" > $STATUSLOG
+cat $LOGFILE >> $STATUSLOG
+echo "--------------------------------------------------------------------------------------" >> $STATUSLOG
+whoami >> $STATUSLOG
+#ls -lisa /home/geexbox /home/geexbox/buildbot /home/geexbox/bot /home/geexbox/bot/buildbot /var/spool/cron/crontabs >> $STATUSLOG
+echo "--------------------------------------------------------------------------------------" >> $STATUSLOG
+
+cat $STATUSLOG $LOGS/$REPONAME/rsync.$DATE.log | xz -z > $LOGS/$REPONAME/1-rsync.$DATE.log.xz
 
 sendlogs
 sendsnapshot
