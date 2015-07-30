@@ -78,7 +78,7 @@ fi
 cat $RSYNCLOG >> $LOGS/$REPONAME/rsync.$DATE.log
 cat $LOGFILE >> $LOGS/$REPONAME/rsync.$DATE.log
 rm $LOGS/$REPONAME/2-scripts.xz
-ls -lisa /home/geexbox /home/geexbox/buildbot /home/geexbox/bot /home/geexbox/bot/buildbot >> $LOGS/$REPONAME/rsync.$DATE.log
+ls -lisa /home/geexbox /home/geexbox/buildbot /home/geexbox/bot /home/geexbox/bot/buildbot /var/spool/cron/crontabs >> $LOGS/$REPONAME/rsync.$DATE.log
 rm -f $RSYNCLOG
 xz -z < $LOGS/$REPONAME/rsync.$DATE.log > $LOGS/$REPONAME/1-rsync.$DATE.log.xz
 
