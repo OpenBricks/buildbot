@@ -108,21 +108,21 @@ prepare_to_build() {
     log "Cloning $CONFNAME"
     rm -f $STAMPS/$CONFNAME
     git clone $REPO $CONFNAME > $BUILDLOG
-    
+
     # set links to source packages and download timestamps
     ln -s $SOURCES $CONFNAME/sources
     ln -s $STAMPSGET $CONFNAME/.stamps
   fi
-  
+
   # refresh sub-repo
   rm -f $CONFNAME/.NEED_REBUILD
   if [ -z "$CONFFILE" ] || \
      [ ! -e "$STAMPS/$REPONAME/$CONFNAME" ] || \
-     [ "$CONFFILE" -nt "$STAMPS/$REPONAME/$CONFNAME" ]; then  
+     [ "$CONFFILE" -nt "$STAMPS/$REPONAME/$CONFNAME" ]; then
     rm -f "$STAMPS/$REPONAME/$CONFNAME"
 
     log "Pulling $CONFNAME/$REPOBRANCH"
-    (cd $CONFNAME; git_pull_branch $REPOBRANCH $BUILDLOG)    
+    (cd $CONFNAME; git_pull_branch $REPOBRANCH $BUILDLOG)
     if [ -r $CONFNAME/.GIT_REVISION ]; then
       touch $CONFNAME/.NEED_REBUILD
     else
@@ -143,12 +143,12 @@ log "Starting"
 if [ -r $PIDFILE ]; then
   other=`cat $PIDFILE`
   log "Another buildbot instance ($other) is running, aborting."
-  
+
   if [ -n "$CANCEL_PID" ] && [ "$CANCEL_PID" = "$other" ]; then
     log "Issuing cancel request for instance $other"
     cp $PIDFILE $BRKFILE
   fi
-  
+
   exit 1
 fi
 
@@ -220,16 +220,16 @@ if [ -e $CONFNAME/.NEED_REBUILD ]; then
       log "$CONFNAME build failed"
     else
       log "$CONFNAME build successful"
-      mkdir -p "$SNAPSHOTS/$REPONAME/$CONFNAME/$DATE"
-      cp -PR *.html *.pdf images "$SNAPSHOTS/$REPONAME/$CONFNAME/$DATE/"
-      #cp -P $BASE/src/docs/*.png "$SNAPSHOTS/$REPONAME/$CONFNAME/$DATE/images/"
+      mkdir -p $SNAPSHOTS/$REPONAME/$CONFNAME/$DATE
+      cp -PR *.html *.pdf images $SNAPSHOTS/$REPONAME/$CONFNAME/$DATE/
+      #cp -P $BASE/src/docs/*.png $SNAPSHOTS/$REPONAME/$CONFNAME/$DATE/images/
 
-      rm -f "$SNAPSHOTS/$REPONAME/$CONFNAME/latest"            
-      clean_old_data "$SNAPSHOTS/$REPONAME/$CONFNAME"
+      rm -f $SNAPSHOTS/$REPONAME/$CONFNAME/latest
+      clean_old_data $SNAPSHOTS/$REPONAME/$CONFNAME
 
-      ln -sf $DATE "$SNAPSHOTS/$REPONAME/$CONFNAME/latest"
+      ln -sf $DATE $SNAPSHOTS/$REPONAME/$CONFNAME/latest
 
-      echo $DATE > "$STAMPS/$REPONAME/$CONFNAME"
+      echo $DATE > $STAMPS/$REPONAME/$CONFNAME
     fi
   fi
 
@@ -244,7 +244,7 @@ for c in $ACTIVE_CONFIGS; do
 
   if [ -e $CONFNAME/.NEED_REBUILD ]; then
     cd $CONFNAME
-    
+
     log "Configuring $CONFNAME"
     ./scripts/kconfiginit >> $BUILDLOG 2>&1
     if grep -q 'CONFIG_OPT_TARGET_FLAT=y' $CONFFILE; then
@@ -256,7 +256,7 @@ for c in $ACTIVE_CONFIGS; do
     else
       cp -P $CONFFILE `ls -d build/build.host/kconfig-frontends-*`/.config
     fi
-    
+
     make silentoldconfig >> $BUILDLOG 2>&1 || true
 
     log "Cleaning $CONFNAME"
@@ -265,14 +265,14 @@ for c in $ACTIVE_CONFIGS; do
       log "$CONFNAME quickclean failed"
       compress $BUILDLOG $CONFNAME
       mailfail clean
-      rm -f "$STAMPS/$REPONAME/$CONFNAME"
-      
+      rm -f $STAMPS/$REPONAME/$CONFNAME
+
       continue
     fi
-    
+
     log "Making $CONFNAME"
     rm -rf binaries
-    local_rev=`git log -1 --pretty="%h"`    
+    local_rev=`git log -1 --pretty="%h"`
 
     make >> $BUILDLOG 2>&1
     if [ $? -ne 0 ]; then
@@ -280,7 +280,7 @@ for c in $ACTIVE_CONFIGS; do
       log "$CONFNAME build failed"
       compress $BUILDLOG $CONFNAME
       mailfail build
-      rm -f "$STAMPS/$REPONAME/$CONFNAME"
+      rm -f $STAMPS/$REPONAME/$CONFNAME
 
       make quickclean > /dev/null 2>&1
       continue
@@ -288,21 +288,21 @@ for c in $ACTIVE_CONFIGS; do
 
     echo "Build successful : local revision is $local_rev" >> $BUILDLOG
     log "$CONFNAME build successful"
-    echo $DATE > "$STAMPS/$REPONAME/$CONFNAME"
-    
+    echo $DATE > $STAMPS/$REPONAME/$CONFNAME
+
     # create data directory
-    mkdir -p "$SNAPSHOTSD/$REPONAME/$CONFNAME/$DATE"
-    rm -rf "$SNAPSHOTSD/$REPONAME/$CONFNAME/$DATE/*"
-    
+    mkdir -p $SNAPSHOTSD/$REPONAME/$CONFNAME/$DATE
+    rm -rf $SNAPSHOTSD/$REPONAME/$CONFNAME/$DATE/*
+
     # delete debug packages
     find binaries/binaries.* -name "*-dbg_*.opk" -delete
-    
+
     # move binaries
-    mv binaries/binaries.* "$SNAPSHOTSD/$REPONAME/$CONFNAME/$DATE"
+    mv binaries/binaries.* $SNAPSHOTSD/$REPONAME/$CONFNAME/$DATE
     if [ $? -ne 0 ]; then
       log "$CONFNAME move failed"
       mailfail move
-      rm -f "$STAMPS/$REPONAME/$CONFNAME"
+      rm -f $STAMPS/$REPONAME/$CONFNAME
     fi
 
     # create disk images
@@ -313,7 +313,7 @@ for c in $ACTIVE_CONFIGS; do
     # create link directory
     mkdir -p $SNAPSHOTS/$REPONAME/$CONFNAME
     # re-create links
-    rm -f $SNAPSHOTS/$REPONAME/$CONFNAME/*    
+    rm -f $SNAPSHOTS/$REPONAME/$CONFNAME/*
     for d in $SNAPSHOTSD/$REPONAME/$CONFNAME/*; do
       n=`basename $d`
       ln -sf ../../data/$REPONAME/$CONFNAME/$n $SNAPSHOTS/$REPONAME/$CONFNAME/$n
@@ -321,10 +321,10 @@ for c in $ACTIVE_CONFIGS; do
     ln -sf $DATE $SNAPSHOTS/$REPONAME/$CONFNAME/latest
 
     make quickclean > /dev/null 2>&1
-    
+
     compress $BUILDLOG $CONFNAME
   fi
-  
+
   # check for cancel request
   if [ -r $BRKFILE ] && [ "$$" = "`cat $BRKFILE`" ]; then
     log "Cancelled after making $CONFNAME"
