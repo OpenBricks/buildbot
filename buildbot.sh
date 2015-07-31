@@ -293,10 +293,17 @@ for c in $ACTIVE_CONFIGS; do
     # create data directory
     mkdir -p "$SNAPSHOTSD/$REPONAME/$CONFNAME/$DATE"
     rm -rf "$SNAPSHOTSD/$REPONAME/$CONFNAME/$DATE/*"
+    
     # delete debug packages
     find binaries/binaries.* -name "*-dbg_*.opk" -delete
+    
     # move binaries
     mv binaries/binaries.* "$SNAPSHOTSD/$REPONAME/$CONFNAME/$DATE"
+    if [ $? -ne 0 ]; then
+      log "$CONFNAME move failed"
+      mailfail move
+      rm -f "$STAMPS/$REPONAME/$CONFNAME"
+    fi
 
     # create disk images
     (cd $SNAPSHOTSD/$REPONAME/$CONFNAME/$DATE/binaries.*; create_img)
