@@ -30,20 +30,26 @@ log() {
 
 sendlogs () {
   rsync_args="-t --size-only --bwlimit=$BWLIMIT --archive --log-file=$XFERLOG --partial $LOGS/$REPONAME/*.?z* $SYNCTARGET:/data/logs-buildbot"
-  log "Rsyncing build logs: $rsync_args"
+  echo "Rsyncing build logs: $rsync_args" >> $RSYNCLOG
   rsync $rsync_args >> $RSYNCLOG 2>&1
+
+  if [ $? -eq 0 ]; then
+    log "rsync successful (logs)"
+  else
+    log "rsync failed (logs)"
+  fi
 }
 
 sendsnapshot () {  
   rsync_args="-t --size-only --bwlimit=$BWLIMIT --archive --log-file=$XFERLOG --partial $SNAPSHOTSD $SYNCTARGET:/data/snapshots/"
-  log "Rsyncing snapshot data: $rsync_args"  
+  echo "Rsyncing snapshot data: $rsync_args" >> $RSYNCLOG
   rsync $rsync_args >> $RSYNCLOG 2>&1
   
   if [ $? -eq 0 ]; then
-    log "rsync successful"
+    log "rsync successful (data)"
     rm -f $LOGS/rsynchfailed
   else
-    log "rsync failed"
+    log "rsync failed (data)"
     touch $LOGS/rsynchfailed
   fi
 }
@@ -51,14 +57,16 @@ sendsnapshot () {
 sendsnapshotlink () {
   if ! [ -f $LOGS/rsynchfailed ] ; then
     rsync_args="-t --size-only --bwlimit=$BWLIMIT --archive --delete --log-file=$XFERLOG --partial $SNAPSHOTS/* $SYNCTARGET:/data/snapshots"
-    log "Rsyncing snapshot links: $rsync_args"
+    echo "Rsyncing snapshot links: $rsync_args" >> $RSYNCLOG
     rsync $rsync_args >> $RSYNCLOG 2>&1
     
     if [ $? -eq 0 ]; then
-      log "rsync successful (link)"
+      log "rsync successful (links)"
     else
-      log "rsync failed (link)"
+      log "rsync failed (links)"
     fi
+  else
+    log "rsync skipped (links)"
   fi
 }
 
@@ -83,6 +91,8 @@ echo "--------------------------------------------------------------------------
 cat $LOGFILE >> $STATUSLOG
 echo "--------------------------------------------------------------------------------------" >> $STATUSLOG
 whoami >> $STATUSLOG
+echo $HOME >> $STATUSLOG
+echo $USER >> $STATUSLOG
 #ls -lisa /home/geexbox /home/geexbox/buildbot /home/geexbox/bot /home/geexbox/bot/buildbot /var/spool/cron/crontabs >> $STATUSLOG
 echo "--------------------------------------------------------------------------------------" >> $STATUSLOG
 
