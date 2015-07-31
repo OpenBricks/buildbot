@@ -40,11 +40,11 @@ sendlogs () {
   fi
 }
 
-sendsnapshot () {  
+sendsnapshot () {
   rsync_args="-t --size-only --bwlimit=$BWLIMIT --archive --log-file=$XFERLOG --partial $SNAPSHOTSD $SYNCTARGET:/data/snapshots/"
   echo "Rsyncing snapshot data: $rsync_args" >> $RSYNCLOG
   rsync $rsync_args >> $RSYNCLOG 2>&1
-  
+
   if [ $? -eq 0 ]; then
     log "rsync successful (data)"
     rm -f $LOGS/rsynchfailed
@@ -59,7 +59,7 @@ sendsnapshotlink () {
     rsync_args="-t --size-only --bwlimit=$BWLIMIT --archive --delete --log-file=$XFERLOG --partial $SNAPSHOTS/* $SYNCTARGET:/data/snapshots"
     echo "Rsyncing snapshot links: $rsync_args" >> $RSYNCLOG
     rsync $rsync_args >> $RSYNCLOG 2>&1
-    
+
     if [ $? -eq 0 ]; then
       log "rsync successful (links)"
     else
