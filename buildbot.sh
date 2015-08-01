@@ -4,6 +4,9 @@ REPOBRANCH=master
 REPOURL="https://github.com/OpenBricks/openbricks.git"
 REPOOWNERS="tomlohave@gmail.com nicknickolaev@gmail.com r.ihle@s-t.de"
 
+# specify the PID of the currently running build to exit gracefully
+CANCEL_PID=""
+
 ACTIVE_CONFIGS=" \
   geexbox-kodi-imx6-cuboxi \
   geexbox-kodi-imx6-utilite \
@@ -15,9 +18,9 @@ ACTIVE_CONFIGS=" \
   geexbox-xbmc-imx6-cuboxi \
   geexbox-xbmc-imx6-utilite \
   geexbox-xbmc-x86_64-generic \
+  geexbox-kodi-bcm2708-raspberrypi \
+  geexbox-kodi-bcm2709-raspberrypi2 \
 "
-
-CANCEL_PID=""
 
 BASE=/home/geexbox/bot/buildbot
 
@@ -87,6 +90,7 @@ git_pull_branch () {
     git checkout $1 >> $2 2>&1
     git merge origin/$1 >> $2 2>&1
     git log -1 --pretty="%h" > .GIT_REVISION
+    echo "Branch $1, revision `cat .GIT_REVISION`" >> $2
   else
     echo "Branch $1 does not exist" >> $2
   fi
@@ -137,7 +141,7 @@ prepare_to_build() {
 
 # Create directories
 mkdir -p $BUILD $SOURCES $STAMPSGET $SNAPSHOTS/$REPONAME $SNAPSHOTSD/$REPONAME $STAMPS/$REPONAME $LOGS/$REPONAME
-log "Starting"
+log "Starting buildbot"
 
 # Check for re-entry
 if [ -r $PIDFILE ]; then
