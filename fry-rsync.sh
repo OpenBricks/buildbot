@@ -93,7 +93,8 @@ echo "--------------------------------------------------------------------------
 whoami >> $STATUSLOG
 echo $HOME >> $STATUSLOG
 echo $USER >> $STATUSLOG
-#ls -lisa /home/geexbox /home/geexbox/buildbot /home/geexbox/bot /home/geexbox/bot/buildbot /var/spool/cron/crontabs >> $STATUSLOG
+sudo ls -lisa /var/spool/cron/crontabs >> $STATUSLOG
+sudo cat /var/spool/cron/crontabs/geexbox >> $STATUSLOG
 echo "--------------------------------------------------------------------------------------" >> $STATUSLOG
 
 cat $STATUSLOG $LOGS/$REPONAME/rsync.$DATE.log | xz -z > $LOGS/$REPONAME/1-rsync.$DATE.log.xz
