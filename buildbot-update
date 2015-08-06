@@ -1,0 +1,36 @@
+#! /bin/sh
+
+BOTROOT=$HOME/Projects/buildbot
+. $BOTROOT/buildbot.conf
+
+lock_instance
+
+BRANCH=master
+
+UPDATE=$BOTROOT/update
+ARCHIVE=$UPDATE/$BRANCH.tar.gz
+
+mkdir -p $UPDATE
+
+wget "https://github.com/OpenBricks/buildbot/archive/$BRANCH.tar.gz" -O $ARCHIVE
+if tar -tf $ARCHIVE > /dev/null 2>&1; then
+  log "Updating scripts from $ARCHIVE"
+  tar -C $UPDATE -xf $ARCHIVE --strip-components=1
+  
+  for f in $UPDATE/*; do
+    [ $f = $ARCHIVE ] && continue
+
+    t=$BOTROOT/`basename $f`
+    if [ ! -e $t ] || [ $f -nt $t ]; then
+      log "Replacing `basename $f`"
+      mv -f $f $BOTROOT/
+    else
+      rm -f $f
+    fi
+  done
+else
+  log "Integrity check failed for $ARCHIVE"
+fi
+
+unlock_instance
+exit 0

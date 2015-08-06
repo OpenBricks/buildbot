@@ -1,0 +1,12 @@
+#! /bin/sh
+
+BOTROOT=$HOME/Projects/buildbot
+. $BOTROOT/buildbot.conf
+
+#lock_instance
+
+rm -f `dirname $PIDFILE`/*-$REPONAME.lock
+rm -f `dirname $BRKFILE`/*-$REPONAME.cancel
+
+#unlock_instance
+exit 0

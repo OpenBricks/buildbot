@@ -1,0 +1,12 @@
+#! /bin/sh
+
+BOTROOT=$HOME/Projects/buildbot
+. $BOTROOT/buildbot.conf
+
+lock_instance $CANCEL_PID
+
+
+
+
+unlock_instance
+exit 0

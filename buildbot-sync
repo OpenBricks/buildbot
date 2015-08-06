@@ -1,0 +1,11 @@
+#! /bin/sh
+
+BOTROOT=$HOME/Projects/buildbot
+. $BOTROOT/buildbot.conf
+
+lock_instance
+
+
+
+unlock_instance
+exit 0
