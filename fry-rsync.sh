@@ -93,27 +93,9 @@ echo "--------------------------------------------------------------------------
 whoami >> $STATUSLOG
 echo $HOME >> $STATUSLOG
 echo $USER >> $STATUSLOG
-#sudo ls -lisa /var/spool/cron/crontabs >> $STATUSLOG
-#sudo cat /var/spool/cron/crontabs/geexbox >> $STATUSLOG
-CRONTAB=/tmp/crontab.tmp
-CRONTAB2=/tmp/crontab2.tmp
-crontab -l > $CRONTAB
-if ! grep -q "reset-buildbot\.sh" $CRONTAB; then
-  grep "^#" $CRONTAB > $CRONTAB2
-  cat >> $CRONTAB2 <<EOF
-
-0 * * * *	/home/geexbox/update-buildbot.sh
-3 * * * *	/home/geexbox/buildbot/buildbot.sh
-5 * * * *	/home/geexbox/buildbot/fry-rsync.sh
-@reboot		/home/geexbox/buildbot/reset-buildbot.sh
-
-EOF
-  crontab $CRONTAB2 >> $STATUSLOG
-  rm -f $CRONTAB $CRONTAB2
-fi
 echo "--------------------------------------------------------------------------------------" >> $STATUSLOG
-crontab -l >> $STATUSLOG
-echo "--------------------------------------------------------------------------------------" >> $STATUSLOG
+#crontab -l >> $STATUSLOG
+#echo "--------------------------------------------------------------------------------------" >> $STATUSLOG
 
 cat $STATUSLOG $LOGS/$REPONAME/rsync.$DATE.log | xz -z > $LOGS/$REPONAME/1-rsync.$DATE.log.xz
 
