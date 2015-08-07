@@ -1,6 +1,6 @@
 #! /bin/sh
 
-BOTROOT=$HOME/Projects/buildbot
+BOTROOT=$HOME/newbot
 . $BOTROOT/buildbot.conf
 
 #lock_instance
