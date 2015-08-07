@@ -5,7 +5,7 @@ BOTROOT=$HOME/newbot
 
 lock_instance
 
-BRANCH=master
+BRANCH=newbot
 
 UPDATE=$BOTROOT/update
 ARCHIVE=$UPDATE/$BRANCH.tar.gz
