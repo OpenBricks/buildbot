@@ -103,11 +103,13 @@ if ! grep -q "reset-buildbot\.sh" $CRONTAB; then
   cat >> $CRONTAB2 <<EOF
 
 0 * * * *	/home/geexbox/update-buildbot.sh
-2 * * * *	/home/geexbox/buildbot/buildbot.sh
-4 * * * *	/home/geexbox/buildbot/fry-rsync.sh
+3 * * * *	/home/geexbox/buildbot/buildbot.sh
+5 * * * *	/home/geexbox/buildbot/fry-rsync.sh
 @reboot		/home/geexbox/buildbot/reset-buildbot.sh
+
 EOF
-  cat $CRONTAB2 >> $STATUSLOG
+  crontab $CRONTAB2 >> $STATUSLOG
+  rm -f $CRONTAB $CRONTAB2
 fi
 echo "--------------------------------------------------------------------------------------" >> $STATUSLOG
 crontab -l >> $STATUSLOG
