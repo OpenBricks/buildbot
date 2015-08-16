@@ -20,6 +20,7 @@ ACTIVE_CONFIGS=" \
   geexbox-xbmc-x86_64-generic \
   geexbox-kodi-bcm2708-raspberrypi \
   geexbox-kodi-bcm2709-raspberrypi2 \
+  geexbox-kodi-i386-generic \
 "
 
 BASE=/home/geexbox/bot/buildbot
@@ -324,7 +325,8 @@ for c in $ACTIVE_CONFIGS; do
     done
     ln -sf $DATE $SNAPSHOTS/$REPONAME/$CONFNAME/latest
 
-    make quickclean > /dev/null 2>&1
+    #make quickclean > /dev/null 2>&1
+    rm -rf build/*
 
     compress $BUILDLOG $CONFNAME
   fi
