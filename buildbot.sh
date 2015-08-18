@@ -5,7 +5,7 @@ REPOURL="https://github.com/OpenBricks/openbricks.git"
 REPOOWNERS="tomlohave@gmail.com nicknickolaev@gmail.com r.ihle@s-t.de"
 
 # specify the PID of the currently running build to exit gracefully
-CANCEL_PID="19452"
+CANCEL_PID=""
 
 ACTIVE_CONFIGS=" \
   geexbox-kodi-imx6-cuboxi \
