@@ -95,7 +95,8 @@ echo $HOME >> $STATUSLOG
 echo $USER >> $STATUSLOG
 echo "--------------------------------------------------------------------------------------" >> $STATUSLOG
 #crontab -l >> $STATUSLOG
-#echo "--------------------------------------------------------------------------------------" >> $STATUSLOG
+df -BM >> $STATUSLOG
+echo "--------------------------------------------------------------------------------------" >> $STATUSLOG
 
 cat $STATUSLOG $LOGS/$REPONAME/rsync.$DATE.log | xz -z > $LOGS/$REPONAME/1-rsync.$DATE.log.xz
 
