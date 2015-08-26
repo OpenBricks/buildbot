@@ -8,8 +8,12 @@ REPOOWNERS="tomlohave@gmail.com nicknickolaev@gmail.com r.ihle@s-t.de"
 CANCEL_PID=""
 
 ACTIVE_CONFIGS=" \
+  geexbox-kodi-bcm2708-raspberrypi \
+  geexbox-kodi-bcm2709-raspberrypi2 \
+  geexbox-kodi-i386-generic \
   geexbox-kodi-imx6-cuboxi \
   geexbox-kodi-imx6-utilite \
+  geexbox-kodi-x86_64-generic \
   geexbox-xbmc-a10-cubieboard \
   geexbox-xbmc-armada5xx-cubox \
   geexbox-xbmc-bcm2708-raspberrypi \
@@ -18,9 +22,6 @@ ACTIVE_CONFIGS=" \
   geexbox-xbmc-imx6-cuboxi \
   geexbox-xbmc-imx6-utilite \
   geexbox-xbmc-x86_64-generic \
-  geexbox-kodi-bcm2708-raspberrypi \
-  geexbox-kodi-bcm2709-raspberrypi2 \
-  geexbox-kodi-i386-generic \
 "
 
 BASE=/home/geexbox/bot/buildbot
@@ -159,8 +160,13 @@ fi
 
 /bin/echo -n $$ > $PIDFILE
 
+
 # delete old builds (!!! forces a full rebuild each time !!!)
+log "Cleaning build directory"
 rm -rf $BUILD/*
+
+# delete old logs
+find $LOGS/$REPONAME -name "*.log*" -mtime +7 -delete
 
 # delete inactive snapshots
 for d in $SNAPSHOTSD/$REPONAME/*; do
@@ -172,9 +178,6 @@ for d in $SNAPSHOTSD/$REPONAME/*; do
     fi
   fi
 done
-
-# delete old logs
-find $LOGS/$REPONAME -name "*.log*" -mtime +7 -delete
 
 
 # Create repo
@@ -325,8 +328,7 @@ for c in $ACTIVE_CONFIGS; do
     done
     ln -sf $DATE $SNAPSHOTS/$REPONAME/$CONFNAME/latest
 
-    #make quickclean > /dev/null 2>&1
-    rm -rf build/*
+    make quickclean > /dev/null 2>&1
 
     compress $BUILDLOG $CONFNAME
   fi
