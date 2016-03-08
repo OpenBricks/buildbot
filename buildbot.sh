@@ -16,12 +16,6 @@ ACTIVE_CONFIGS=" \
   geexbox-kodi-x86_64-generic \
   geexbox-xbmc-a10-cubieboard \
   geexbox-xbmc-armada5xx-cubox \
-  geexbox-xbmc-bcm2708-raspberrypi \
-  geexbox-xbmc-bcm2709-raspberrypi2 \
-  geexbox-xbmc-i386-generic \
-  geexbox-xbmc-imx6-cuboxi \
-  geexbox-xbmc-imx6-utilite \
-  geexbox-xbmc-x86_64-generic \
 "
 
 BASE=/home/geexbox/bot/buildbot
