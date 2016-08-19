@@ -91,11 +91,13 @@ date -R > $RSYNCLOG
 echo "--------------------------------------------------------------------------------------" > $STATUSLOG
 cat $LOGFILE >> $STATUSLOG
 echo "--------------------------------------------------------------------------------------" >> $STATUSLOG
-whoami >> $STATUSLOG
-echo $HOME >> $STATUSLOG
-echo $USER >> $STATUSLOG
+echo "WHOAMI: $(whoami)" >> $STATUSLOG
+echo "  USER: $USER" >> $STATUSLOG
+echo "  HOME: $HOME" >> $STATUSLOG
+echo "   PWD: $PWD" >> $STATUSLOG
 echo "--------------------------------------------------------------------------------------" >> $STATUSLOG
-#crontab -l >> $STATUSLOG
+crontab -l >> $STATUSLOG
+echo "--------------------------------------------------------------------------------------" >> $STATUSLOG
 df -BM >> $STATUSLOG
 echo "--------------------------------------------------------------------------------------" >> $STATUSLOG
 
