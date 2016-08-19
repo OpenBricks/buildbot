@@ -99,19 +99,24 @@ echo "--------------------------------------------------------------------------
 df -BM >> $STATUSLOG
 echo "--------------------------------------------------------------------------------------" >> $STATUSLOG
 
-system_uptime_days=$(expr $(sed -e "s/\..*//" /proc/uptime) / 86400)
-echo "System uptime: $system_uptime_days days" >> $STATUSLOG
-echo "--------------------------------------------------------------------------------------" >> $STATUSLOG
-
-buildbot_pid=$(cat $PIDFILE_BUILDBOT)
+uptime_limit=21
+buildbot_state="idle"
+buildbot_pid=$(cat $PIDFILE_BUILDBOT 2>/dev/null)
 if [ -n "$buildbot_pid" ]; then
-  if ps -p $buildbot_pid > /dev/null; then
-    echo "Buildbot instance $buildbot_pid alive." >> $STATUSLOG
+  if ps -p $buildbot_pid >/dev/null; then
+    uptime_limit=28
+    buildbot_state="active"
   else
-    echo "Buildbot instance $buildbot_pid is dead !!!" >> $STATUSLOG
+    uptime_limit=0
+    buildbot_state="dead"
   fi
+  echo "Buildbot instance ${buildbot_pid} is ${buildbot_state}." >> $STATUSLOG
   echo "--------------------------------------------------------------------------------------" >> $STATUSLOG
 fi
+
+system_uptime_days=$(expr $(sed -e "s/\..*//" /proc/uptime) / 86400)
+echo "System uptime: $system_uptime_days days, reboot after $uptime_limit days" >> $STATUSLOG
+echo "--------------------------------------------------------------------------------------" >> $STATUSLOG
 
 cat $STATUSLOG $LOGS/$REPONAME/rsync.$DATE.log | xz -z > $LOGS/$REPONAME/1-rsync.$DATE.log.xz
 
@@ -120,5 +125,11 @@ sendsnapshot
 sendsnapshotlink
 
 log "End of rsync"
+
+# Reboot system periodically
+if [ $system_uptime_days -gt $uptime_limit ]; then
+  reboot
+fi
+
 rm -f $PIDFILE
 exit 0
