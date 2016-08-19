@@ -130,7 +130,7 @@ log "End of rsync"
 
 # Reboot system periodically
 if [ $system_uptime_days -gt $uptime_limit ]; then
-  reboot
+  sudo reboot
 fi
 
 rm -f $PIDFILE
