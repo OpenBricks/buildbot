@@ -15,6 +15,7 @@ LOGS=$BASE/logs
 LOGFILE=$BASE/logs/$REPONAME.log
 STAMPS=$BASE/stamps
 PIDFILE=$STAMPS/lockrsync
+PIDFILE_BUILDBOT=$STAMPS/lock
 
 BWLIMIT=100
 XFERLOG=/tmp/rlog
@@ -77,7 +78,7 @@ log "Starting rsync to fry ..."
 
 # Check for re-entry
 if [ -r $PIDFILE ]; then
-  log "Another rsync instance (`cat $PIDFILE`) is running, aborting."
+  log "Another rsync instance ($(cat $PIDFILE)) is running, aborting."
   exit 1
 fi
 
@@ -97,6 +98,20 @@ echo "--------------------------------------------------------------------------
 #crontab -l >> $STATUSLOG
 df -BM >> $STATUSLOG
 echo "--------------------------------------------------------------------------------------" >> $STATUSLOG
+
+system_uptime_days=$(expr $(sed -e "s/\..*//" /proc/uptime) / 86400)
+echo "System uptime: $system_uptime_days days" >> $STATUSLOG
+echo "--------------------------------------------------------------------------------------" >> $STATUSLOG
+
+buildbot_pid=$(cat $PIDFILE_BUILDBOT)
+if [ -n "$buildbot_pid" ]; then
+  if ps -p $buildbot_pid > /dev/null; then
+    echo "Buildbot instance $buildbot_pid alive." >> $STATUSLOG
+  else
+    echo "Buildbot instance $buildbot_pid is dead !!!" >> $STATUSLOG
+  fi
+  echo "--------------------------------------------------------------------------------------" >> $STATUSLOG
+fi
 
 cat $STATUSLOG $LOGS/$REPONAME/rsync.$DATE.log | xz -z > $LOGS/$REPONAME/1-rsync.$DATE.log.xz
 
