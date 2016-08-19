@@ -74,9 +74,9 @@ sendsnapshotlink () {
 remove_source () {
   if [ ! -e $SOURCES/$1/$2.bad ]; then
     mv -f $SOURCES/$1/$2 $SOURCES/$1/$2.bad
-    rm $STAMPSGET/$1/*.get $STAMPSGET/$1/*.ok
+    rm $STAMPSGET/$1/.*.get $STAMPSGET/$1/*.ok
 
-    echo "Removing $1" >> $STATUSLOG
+    echo "Removing $1/$2" >> $STATUSLOG
     echo "--------------------------------------------------------------------------------------" >> $STATUSLOG
   fi
 }
