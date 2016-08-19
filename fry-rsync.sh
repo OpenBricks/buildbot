@@ -71,6 +71,16 @@ sendsnapshotlink () {
   fi
 }
 
+remove_source () {
+  if [ ! -e $SOURCES/$1/$2.bad ]; then
+    mv -f $SOURCES/$1/$2 $SOURCES/$1/$2.bad
+    rm $STAMPSGET/$1/*.get $STAMPSGET/$1/*.ok
+
+    echo "Removing $1" >> $STATUSLOG
+    echo "--------------------------------------------------------------------------------------" >> $STATUSLOG
+  fi
+}
+
 
 # Create directories
 mkdir -p $SNAPSHOTS/$REPONAME $SNAPSHOTSD/$REPONAME $STAMPS/$REPONAME $LOGS/$REPONAME
@@ -119,6 +129,8 @@ fi
 system_uptime_days=$(expr $(sed -e "s/\..*//" /proc/uptime) / 86400)
 echo "System uptime: $system_uptime_days days, reboot after $uptime_limit days" >> $STATUSLOG
 echo "--------------------------------------------------------------------------------------" >> $STATUSLOG
+
+remove_source "gcc-linaro" "gcc-linaro-4.9-2016.02.tar.xz"
 
 cat $STATUSLOG $LOGS/$REPONAME/rsync.$DATE.log | xz -z > $LOGS/$REPONAME/1-rsync.$DATE.log.xz
 
