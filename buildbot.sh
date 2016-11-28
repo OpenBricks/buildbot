@@ -8,6 +8,7 @@ REPOOWNERS="tomlohave@gmail.com nicknickolaev@gmail.com r.ihle@s-t.de"
 CANCEL_PID=""
 
 ACTIVE_CONFIGS=" \
+  geexbox-kodi-armada5xx-cubox \
   geexbox-kodi-bcm2708-raspberrypi \
   geexbox-kodi-bcm2709-raspberrypi2 \
   geexbox-kodi-i386-generic \
