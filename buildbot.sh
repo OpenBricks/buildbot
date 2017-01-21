@@ -5,7 +5,7 @@ REPOURL="https://github.com/OpenBricks/openbricks.git"
 REPOOWNERS="tomlohave@gmail.com nicknickolaev@gmail.com r.ihle@s-t.de"
 
 # specify the PID of the currently running build to exit gracefully
-CANCEL_PID="13066"
+CANCEL_PID=""
 
 ACTIVE_CONFIGS=" \
   geexbox-kodi-armada5xx-cubox \
@@ -241,6 +241,13 @@ fi
 
 # build active configurations
 for c in $ACTIVE_CONFIGS; do
+  # check for cancel request
+  if [ -r $BRKFILE ] && [ "$$" = "`cat $BRKFILE`" ]; then
+    log "Cancelled after making $CONFNAME"
+    rm -f $BRKFILE
+    break
+  fi
+
   cd $BUILD
   prepare_to_build "$c" "$REPO/config/defconfigs/$c.conf"
 
@@ -325,13 +332,6 @@ for c in $ACTIVE_CONFIGS; do
     make quickclean > /dev/null 2>&1
 
     compress $BUILDLOG $CONFNAME
-  fi
-
-  # check for cancel request
-  if [ -r $BRKFILE ] && [ "$$" = "`cat $BRKFILE`" ]; then
-    log "Cancelled after making $CONFNAME"
-    rm -f $BRKFILE
-    break
   fi
 done
 
