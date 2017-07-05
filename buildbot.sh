@@ -236,11 +236,6 @@ if [ -e $CONFNAME/.NEED_REBUILD ]; then
   fi
 
   compress $BUILDLOG $CONFNAME
-
-  # force re-download of these packages
-  for prj in libcmrt flexget couchpotato libtorrent rtorrent libgdiplus libva-intel-hybrid; do
-    rm -rf $STAMPSGET/$prj
-  done
 fi
 
 
