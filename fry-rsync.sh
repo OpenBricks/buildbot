@@ -101,6 +101,7 @@ date -R > $RSYNCLOG
 echo "--------------------------------------------------------------------------------------" > $STATUSLOG
 cat $LOGFILE >> $STATUSLOG
 echo "--------------------------------------------------------------------------------------" >> $STATUSLOG
+echo "SYSTEM: $(cat /etc/issue)" >> $STATUSLOG
 echo "WHOAMI: $(whoami)" >> $STATUSLOG
 echo "  USER: $USER" >> $STATUSLOG
 echo "  HOME: $HOME" >> $STATUSLOG
